@@ -1,14 +1,15 @@
+import { HomeDiv, TopBar, Main, Container } from "./Styled";
+import LogoComponent from "./components/LogoComponent.jsx";
+import HeaderComponent from "./components/HeaderComponent.jsx";
+import FeatureCardWrapper from "./components/FeatureCardWrapper.jsx";
+import SchedulingComponent from "./components/SchedulingComponent.jsx";
 import { useState } from "react";
-import {
-  HomeDiv,
-  TopBar,
-  H1Div,
-  Header,
-  H1Logo,
-  MobileMenuButton,
-  MobileNav,
-} from "./Styled";
-import NavComponet from "./components/NavComponent.jsx";
+import HowToUseComponent from "./components/HowToUseComponent.jsx";
+import ServicesComponent from "./components/ServicesComponent.jsx";
+import AboutComponent from "./components/AboutComponent.jsx";
+import TitleComponent from "./components/TitleComponent.jsx";
+import ContactComponent from "./components/ContactComponent.jsx";
+import FooterComponent from "./components/FooterComponent.jsx";
 
 export const links = [
   { label: "Početna", href: "#" },
@@ -19,28 +20,33 @@ export const links = [
 ];
 
 export const Home = () => {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [showScheduling, setShowScheduling] = useState(false);
+
+  const handleSchedulingClose = (e) => {
+    e.preventDefault();
+    setShowScheduling(false);
+  };
 
   return (
     <HomeDiv>
       <TopBar>
-        <H1Div>
-          <H1Logo>ENotar</H1Logo>
-        </H1Div>
-        <Header>
-          <NavComponet links={links} />
-          <MobileMenuButton onClick={() => setMobileOpen((s) => !s)}>
-            {mobileOpen ? "Zatvori" : "Menu"}
-          </MobileMenuButton>
-        </Header>
+        <LogoComponent />
+        <HeaderComponent />
       </TopBar>
-      <MobileNav open={mobileOpen}>
-        <NavComponet
-          onLinkClick={() => setMobileOpen(false)}
-          mobile
-          links={links}
-        />
-      </MobileNav>
+      <Main>
+        <Container>
+          <TitleComponent onOpen={() => setShowScheduling(true)} />
+          <FeatureCardWrapper />
+          {showScheduling && (
+            <SchedulingComponent onClose={handleSchedulingClose} />
+          )}
+          <HowToUseComponent />
+          <ServicesComponent />
+          <AboutComponent />
+        </Container>
+        <ContactComponent />
+      </Main>
+      <FooterComponent />
     </HomeDiv>
   );
 };
