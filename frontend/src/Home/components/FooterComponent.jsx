@@ -5,23 +5,21 @@ const FooterComponent = () => {
     <Footer>
       <FooterInner>
         <div>
-          <div style={{ fontWeight: 700, color: "white" }}>e-Notar</div>
+          <NotarDiv>e-Notar</NotarDiv>
           <div style={{ marginTop: 8, color: "#9ca3af", fontSize: 13 }}>
             © 2025 e-Notar. Sva prava zadržana.
           </div>
         </div>
 
-        <div style={{ color: "#d1d5db", fontSize: 14 }}>
+        <ContactDiv>
           <div>Uslovi korišćenja</div>
           <div style={{ marginTop: 8 }}>Politika privatnosti</div>
-        </div>
+        </ContactDiv>
 
-        <div style={{ color: "#d1d5db", fontSize: 14 }}>
+        <ContactDiv>
           <div>Pratite nas</div>
-          <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-            Facebook · LinkedIn · Instagram
-          </div>
-        </div>
+          <FacebookDiv>Facebook · LinkedIn · Instagram</FacebookDiv>
+        </ContactDiv>
       </FooterInner>
     </Footer>
   );
@@ -44,4 +42,18 @@ const FooterInner = styled.div`
   }
 `;
 
+const ContactDiv = styled.div`
+  color: #d1d5db;
+  font-size: 14px;
+`;
+const FacebookDiv = styled.div`
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+`;
+
+const NotarDiv = styled.div`
+  font-weight: 700;
+  color: white;
+`;
 export default FooterComponent;

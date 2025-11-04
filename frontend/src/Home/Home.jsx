@@ -12,14 +12,6 @@ import FooterComponent from "./components/FooterComponent.jsx";
 import styled from "styled-components";
 import { COLORS, BREAKPOINTS } from "./Styled";
 
-export const links = [
-  { label: "Početna", href: "#" },
-  { label: "Usluge", href: "#services" },
-  { label: "Kako radi", href: "#how" },
-  { label: "Kontakt", href: "#kontakt" },
-  { label: "Zakaži termin", href: "#zakazi", cta: true },
-];
-
 export const Home = () => {
   const [showScheduling, setShowScheduling] = useState(false);
 

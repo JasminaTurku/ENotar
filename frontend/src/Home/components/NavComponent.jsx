@@ -1,7 +1,8 @@
 import { COLORS } from "../Styled";
 import styled from "styled-components";
+import { links } from "../constants";
 
-export const NavComponet = ({ onLinkClick, mobile = false, links }) => (
+export const NavComponent = ({ onLinkClick, mobile = false }) => (
   <NavStyled mobile={mobile}>
     {links.map((l) => (
       <a
@@ -21,7 +22,6 @@ const NavStyled = styled.nav`
   gap: 1.5rem;
   align-items: center;
   font-size: 0.875rem;
-  flex-direction: row;
   flex-direction: ${(props) => (props.mobile ? "column" : "row")};
 
   @media (min-width: 768px) {
@@ -45,4 +45,4 @@ const NavStyled = styled.nav`
     border-radius: 6px;
   }
 `;
-export default NavComponet;
+export default NavComponent;

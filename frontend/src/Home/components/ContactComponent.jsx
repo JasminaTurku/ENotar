@@ -11,9 +11,9 @@ const ContactComponent = () => {
             <Input placeholder="Ime i prezime" />
             <Input placeholder="E-mail" />
             <TextArea placeholder="Poruka" />
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <DivWrapperA>
               <A>Pošalji</A>
-            </div>
+            </DivWrapperA>
           </div>
         </FormStyled>
 
@@ -21,18 +21,12 @@ const ContactComponent = () => {
           <div style={{ color: COLORS.gray600 }}>
             Adresa: Trg primer 1, Grad
           </div>
-          <div style={{ color: COLORS.gray600, marginTop: 8 }}>
-            Email: podrška@e-notar.rs
-          </div>
-          <div style={{ color: COLORS.gray600, marginTop: 8 }}>
-            Tel: +381 11 123 456
-          </div>
+          <DivStyled>Email: podrška@e-notar.rs</DivStyled>
+          <DivStyled>Tel: +381 11 123 456</DivStyled>
 
           <div style={{ marginTop: 16 }}>
-            <h4 style={{ margin: 0, fontWeight: 700 }}>Radno vreme</h4>
-            <div style={{ color: COLORS.gray600, marginTop: 6 }}>
-              Pon–Pet: 08:00–16:00
-            </div>
+            <H4>Radno vreme</H4>
+            <DivStyled>Pon–Pet: 08:00–16:00</DivStyled>
           </div>
         </div>
       </ContactGrid>
@@ -80,6 +74,20 @@ const Input = styled.input`
     box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.06);
     border-color: ${COLORS.indigo};
   }
+`;
+const H4 = styled.h4`
+  margin: 0;
+  font-weight: 700;
+`;
+
+const DivStyled = styled.div`
+  color: ${COLORS.gray600};
+  margin-top: 8px;
+`;
+
+const DivWrapperA = styled.div`
+  display: flex;
+  justify-content: flex-end;
 `;
 
 export default ContactComponent;

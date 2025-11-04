@@ -6,55 +6,42 @@ const AboutComponent = () => {
     <AboutSection>
       <AboutGrid>
         <div>
-          <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>O nama</h3>
-          <p style={{ marginTop: 12, color: COLORS.gray600 }}>
+          <H3>O nama</H3>
+          <P>
             e-Notar je platforma koja spaja građane i javne beležnike. Naš cilj
             je da smanjimo čekanje, povećamo transparentnost i omogućimo sigurnu
             online komunikaciju.
-          </p>
-
-          <ul
-            style={{
-              marginTop: 12,
-              paddingLeft: 18,
-              color: COLORS.gray600,
-            }}
-          >
+          </P>
+          <Ul>
             <li>Transparentan status overe</li>
             <li>Šifrovana razmena dokumenata</li>
             <li>Pristup evidenciji overe</li>
-          </ul>
+          </Ul>
         </div>
 
-        <div style={{ display: "grid", gap: 12 }}>
+        <SmallDivWrapper>
           <SmallCard>
-            <div style={{ fontWeight: 600 }}>Za građane</div>
+            <SmallDivStyled>Za građane</SmallDivStyled>
             <SmallDiv>
               Zakažite termin, pošaljite dokument i pratite status.
             </SmallDiv>
-            <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+            <SmallDiv2>
               <A>Registruj se</A>
               <AStyled>Proveri status</AStyled>
-            </div>
+            </SmallDiv2>
           </SmallCard>
 
           <SmallCard>
-            <div style={{ fontWeight: 600 }}>Za notare</div>
-            <div
-              style={{
-                marginTop: 6,
-                color: COLORS.gray600,
-                fontSize: 13,
-              }}
-            >
+            <SmallDivStyled>Za notare</SmallDivStyled>
+            <SmallDiv>
               Panel za obradu zahteva, evidenciju i komunikaciju sa klijentima.
-            </div>
-            <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+            </SmallDiv>
+            <SmallDiv2>
               <A>Prijavi se</A>
               <AStyled>Saznaj više</AStyled>
-            </div>
+            </SmallDiv2>
           </SmallCard>
-        </div>
+        </SmallDivWrapper>
       </AboutGrid>
     </AboutSection>
   );
@@ -87,5 +74,33 @@ const SmallDiv = styled.div`
   margin-top: 6px;
   color: ${COLORS.gray600};
   font-size: 13px;
+`;
+const H3 = styled.h3`
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+`;
+const P = styled.p`
+  margin-top: 12px;
+  color: ${COLORS.gray600};
+`;
+const Ul = styled.ul`
+  margin-top: 12px;
+  padding-left: 18px;
+  color: ${COLORS.gray600};
+`;
+
+const SmallDiv2 = styled.div`
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+`;
+const SmallDivWrapper = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+const SmallDivStyled = styled.div`
+  font-weight: 600;
 `;
 export default AboutComponent;

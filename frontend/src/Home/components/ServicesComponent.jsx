@@ -29,28 +29,22 @@ const Title = [
 const ServicesComponent = () => {
   return (
     <ServicesSection id="services">
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <h3 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
-          Usluge koje nudimo
-        </h3>
-        <p style={{ marginTop: 8, color: COLORS.gray600 }}>
-          Najčešće overe dostupne preko platforme.
-        </p>
+      <SectionDiv>
+        <H3>Usluge koje nudimo</H3>
+        <P>Najčešće overe dostupne preko platforme.</P>
 
         <ServicesGrid>
           {Title.map((svc) => (
             <ServiceCard key={svc.title}>
-              <div style={{ fontSize: 18, fontWeight: 700 }}>{svc.title}</div>
-              <div style={{ marginTop: 8, color: COLORS.gray600 }}>
-                {svc.text}
-              </div>
+              <ServiceCardDiv>{svc.title}</ServiceCardDiv>
+              <ServiceCardTextDiv>{svc.text}</ServiceCardTextDiv>
               <div style={{ marginTop: 12 }}>
                 <AStyled href="#zakazi">Zakaži</AStyled>
               </div>
             </ServiceCard>
           ))}
         </ServicesGrid>
-      </div>
+      </SectionDiv>
     </ServicesSection>
   );
 };
@@ -77,4 +71,28 @@ const ServiceCard = styled.div`
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 `;
 
+const H3 = styled.h3`
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+`;
+const P = styled.p`
+  margin-top: 12px;
+  color: ${COLORS.gray600};
+`;
+
+const SectionDiv = styled.div`
+  max-width: 1100px;
+  margin: 0 auto;
+`;
+
+const ServiceCardDiv = styled.div`
+  font-size: 18px;
+  font-weight: 700;
+`;
+
+const ServiceCardTextDiv = styled.div`
+  margin-top: 8px;
+  color: ${COLORS.gray600};
+`;
 export default ServicesComponent;

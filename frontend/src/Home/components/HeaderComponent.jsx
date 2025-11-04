@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { COLORS } from "../Styled";
 import NavComponet from "./NavComponent";
-import { links } from "../Home";
+import { links } from "../constants";
 
 const HeaderComponent = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
