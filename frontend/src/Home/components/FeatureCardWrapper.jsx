@@ -1,5 +1,6 @@
 import React from "react";
-import { FeaturesGrid } from "../Styled";
+import { COLORS } from "../Styled";
+import styled from "styled-components";
 import FeatureCardComponent from "./FeatureCardComponent";
 
 const FeatureCardWrapper = () => {
@@ -35,5 +36,13 @@ const FeatureCardWrapper = () => {
     </FeaturesGrid>
   );
 };
+
+const FeaturesGrid = styled.div`
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  color: ${COLORS.gray600};
+`;
 
 export default FeatureCardWrapper;

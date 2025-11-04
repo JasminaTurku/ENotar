@@ -1,13 +1,6 @@
 import React from "react";
-import {
-  ServiceCard,
-  ServicesGrid,
-  ServicesSection,
-  COLORS,
-  ServiceCardTitle,
-  A,
-  AStyled,
-} from "../Styled";
+import { COLORS, AStyled, BREAKPOINTS } from "../Styled";
+import styled from "styled-components";
 
 const Title = [
   {
@@ -61,5 +54,27 @@ const ServicesComponent = () => {
     </ServicesSection>
   );
 };
+
+const ServicesSection = styled.section`
+  padding: 28px 24px;
+`;
+
+const ServicesGrid = styled.div`
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+
+  @media (min-width: ${BREAKPOINTS.md}) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const ServiceCard = styled.div`
+  background: ${COLORS.white};
+  padding: 18px;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+`;
 
 export default ServicesComponent;

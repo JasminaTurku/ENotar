@@ -1,13 +1,5 @@
-import React from "react";
-import {
-  HowSection,
-  HowInner,
-  HowGrid,
-  HowCard,
-  HowIcon,
-  COLORS,
-  H3,
-} from "../Styled";
+import { COLORS, BREAKPOINTS } from "../Styled";
+import styled from "styled-components";
 const HowToUseComponent = () => {
   return (
     <HowSection id="how">
@@ -61,3 +53,42 @@ const HowToUseComponent = () => {
 };
 
 export default HowToUseComponent;
+
+const HowSection = styled.section`
+  background: ${COLORS.indigoLightBg};
+  padding: 28px 24px;
+`;
+
+const HowInner = styled.div`
+  max-width: 1100px;
+  margin: 0 auto;
+`;
+
+const HowGrid = styled.div`
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+
+  @media (min-width: ${BREAKPOINTS.md}) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+`;
+
+const HowCard = styled.div`
+  background: ${COLORS.white};
+  padding: 18px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+`;
+
+const HowIcon = styled.div`
+  font-size: 28px;
+`;
+
+const H3 = styled.h3`
+  margin: 0;
+  font-size: 22;
+  font-weight: 700;
+`;

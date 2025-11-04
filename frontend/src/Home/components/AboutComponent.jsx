@@ -1,12 +1,5 @@
-import {
-  AboutGrid,
-  AboutSection,
-  SmallCard,
-  COLORS,
-  SmallDiv,
-  A,
-  AStyled,
-} from "../Styled";
+import { COLORS, A, AStyled, BREAKPOINTS } from "../Styled";
+import styled from "styled-components";
 
 const AboutComponent = () => {
   return (
@@ -67,4 +60,32 @@ const AboutComponent = () => {
   );
 };
 
+const AboutSection = styled.section`
+  background: ${COLORS.white};
+  padding: 28px 24px;
+`;
+
+const AboutGrid = styled.div`
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+
+  @media (min-width: ${BREAKPOINTS.md}) {
+    grid-template-columns: 1fr 360px;
+    align-items: start;
+  }
+`;
+
+const SmallCard = styled.div`
+  border: 1px solid ${COLORS.gray200};
+  padding: 12px;
+  border-radius: 10px;
+`;
+
+const SmallDiv = styled.div`
+  margin-top: 6px;
+  color: ${COLORS.gray600};
+  font-size: 13px;
+`;
 export default AboutComponent;

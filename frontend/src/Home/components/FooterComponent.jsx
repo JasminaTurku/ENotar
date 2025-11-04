@@ -1,5 +1,5 @@
-import React from "react";
-import { Footer, FooterInner } from "../Styled";
+import { COLORS, BREAKPOINTS } from "../Styled";
+import styled from "styled-components";
 const FooterComponent = () => {
   return (
     <Footer>
@@ -26,5 +26,22 @@ const FooterComponent = () => {
     </Footer>
   );
 };
+
+const Footer = styled.footer`
+  background: ${COLORS.darkFooter};
+  color: #d1d5db;
+`;
+
+const FooterInner = styled.div`
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  gap: 12px;
+
+  @media (min-width: ${BREAKPOINTS.md}) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
 
 export default FooterComponent;
