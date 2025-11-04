@@ -1,8 +1,98 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, COLORS } from "../Styled";
 import styled from "styled-components";
+import zakaziNotara from "../endpoints/ZakaziNotara.js";
+import getUserByName from "../endpoints/getUserByName.js";
 
 const SchedulingComponent = ({ onClose }) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({
+    notarIme: "",
+    gradjaninIme: "",
+    vrstaOvere: "",
+    datum: "",
+    vreme: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id === "notar-ime"
+        ? "notarIme"
+        : id === "gradjanin-ime"
+        ? "gradjaninIme"
+        : id === "service"
+        ? "vrstaOvere"
+        : id]: value,
+    }));
+  };
+
+  const handleZakazi = async (e) => {
+    e.preventDefault();
+    console.log("Form data:", formData);
+
+    if (
+      !formData.notarIme ||
+      !formData.gradjaninIme ||
+      !formData.vrstaOvere ||
+      !formData.datum ||
+      !formData.vreme
+    ) {
+      setError("Molimo popunite sva polja");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // First, get the gradjanin ID by name
+      const gradjaninResponse = await getUserByName(
+        formData.gradjaninIme,
+        "gradjanin"
+      );
+
+      if (!gradjaninResponse.ok) {
+        throw new Error(
+          "Nije moguće pronaći građanina sa unesenim imenom i prezimenom."
+        );
+      }
+
+      const gradjaninData = await gradjaninResponse.json();
+      const gradjaninId = gradjaninData.id;
+
+      // Get notar by name
+      const notarResponse = await getUserByName(formData.notarIme, "notar");
+
+      if (!notarResponse.ok) {
+        throw new Error(
+          "Nije moguće pronaći notara sa unesenim imenom i prezimenom."
+        );
+      }
+
+      const notarData = await notarResponse.json();
+      const notarId = notarData.id;
+
+      const termin = {
+        gradjanin_id: gradjaninId,
+        notar_id: notarId,
+        vrsta_overe: formData.vrstaOvere,
+        datum: formData.datum,
+        vreme: formData.vreme,
+        status: "zakazano",
+      };
+
+      const data = await zakaziNotara(termin);
+      console.log("Termin zakazan:", data);
+      onClose?.();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <Card>
       <CardTitle>Brzo zakažite termin</CardTitle>
@@ -10,32 +100,67 @@ const SchedulingComponent = ({ onClose }) => {
 
       <Form id="zakazi">
         <div>
-          <Label htmlFor="fullname">Ime i prezime notara </Label>
-          <Input id="fullname" placeholder="Marko Marković" />
+          <Label htmlFor="notar-ime">Ime i prezime notara </Label>
+          <Input
+            id="notar-ime"
+            placeholder="Marko Marković"
+            value={formData.notarIme}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div>
+          <Label htmlFor="gradjanin-ime">Ime i prezime građanina </Label>
+          <Input
+            id="gradjanin-ime"
+            placeholder="Petar Petrović"
+            value={formData.gradjaninIme}
+            onChange={handleInputChange}
+          />
         </div>
 
         <div>
           <Label htmlFor="service">Vrsta overe</Label>
-          <Select id="service" defaultValue="">
+          <Select
+            id="service"
+            value={formData.vrstaOvere}
+            onChange={handleInputChange}
+          >
             <option value="">— Izaberite —</option>
-            <option>Overa potpisa</option>
-            <option>Overa punomoćja</option>
-            <option>Overa ugovora</option>
+            <option value="overa_potpisa">Overa potpisa</option>
+            <option value="overa_punomocja">Overa punomoćja</option>
+            <option value="overa_ugovora">Overa ugovora</option>
           </Select>
         </div>
 
         <Row>
-          <Input type="date" />
-          <Input type="time" />
+          <Input
+            type="date"
+            id="datum"
+            value={formData.datum}
+            onChange={handleInputChange}
+          />
+          <Input
+            type="time"
+            id="vreme"
+            value={formData.vreme}
+            onChange={handleInputChange}
+          />
         </Row>
 
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+
         <FormButtons>
-          <Button primary type="submit">
-            Zakaži
+          <Button
+            primary
+            type="submit"
+            onClick={handleZakazi}
+            disabled={loading}
+          >
+            {loading ? "Učitavanje..." : "Zakaži"}
           </Button>
           <Button type="button">Sačuvaj kao nacrt</Button>
-          <Button type="otkazi" onClick={onClose}>
-            Otkazi
+          <Button type="button" onClick={onClose}>
+            Otkaži
           </Button>
         </FormButtons>
       </Form>
@@ -111,6 +236,13 @@ const Row = styled.div`
 const FormButtons = styled.div`
   display: flex;
   gap: 8px;
+`;
+
+const ErrorMessage = styled.div`
+  color: #dc2626;
+  font-size: 14px;
+  margin: 8px 0;
+  text-align: center;
 `;
 
 export default SchedulingComponent;

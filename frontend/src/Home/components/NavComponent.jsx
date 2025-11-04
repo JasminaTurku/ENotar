@@ -1,21 +1,31 @@
-import { COLORS } from "../Styled";
+import { Button, COLORS } from "../Styled";
 import styled from "styled-components";
 import { links } from "../constants";
+import { useNavigate } from "react-router-dom";
 
-export const NavComponent = ({ onLinkClick, mobile = false }) => (
-  <NavStyled mobile={mobile}>
-    {links.map((l) => (
-      <a
-        key={l.href + l.label}
-        href={l.href}
-        className={l.cta ? "cta" : ""}
-        onClick={onLinkClick}
-      >
-        {l.label}
-      </a>
-    ))}
-  </NavStyled>
-);
+export const NavComponent = ({ onLinkClick, mobile = false }) => {
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  return (
+    <NavStyled mobile={mobile}>
+      {links.map((l) => (
+        <a
+          key={l.href + l.label}
+          href={l.href}
+          className={l.cta ? "cta" : ""}
+          onClick={onLinkClick}
+        >
+          {l.label}
+        </a>
+      ))}
+      <Button onClick={handleLogin}>Prijavi se</Button>
+    </NavStyled>
+  );
+};
 
 const NavStyled = styled.nav`
   display: ${(props) => (props.mobile ? "flex" : "none")};

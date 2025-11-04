@@ -1,4 +1,3 @@
-import React from "react";
 import { COLORS, AStyled, BREAKPOINTS } from "../Styled";
 import styled from "styled-components";
 
@@ -95,4 +94,11 @@ const ServiceCardTextDiv = styled.div`
   margin-top: 8px;
   color: ${COLORS.gray600};
 `;
+
+const ErrorMessage = styled.div`
+  color: #dc2626;
+  font-size: 14px;
+  margin-top: 8px;
+`;
+
 export default ServicesComponent;
