@@ -1,24 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
-import { COLORS } from "../Styled";
+import { COLORS } from "../../Styled";
+import useNotari from "./useNotari";
 
 const SelectComponent = ({ value, onChange, id }) => {
-  const [notari, setNotari] = useState([]);
-
-  useEffect(() => {
-    const fetchNotari = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/notari");
-        setNotari(response.data);
-        console.log("Dohvaćeni notari:", response.data);
-      } catch (error) {
-        console.error("Greška pri dohvatanju notara:", error);
-      }
-    };
-
-    fetchNotari();
-  }, []);
+  const { notari } = useNotari();
 
   return (
     <StyledSelect id={id} value={value} onChange={onChange}>

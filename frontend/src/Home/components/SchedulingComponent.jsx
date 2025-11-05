@@ -3,8 +3,8 @@ import { Button, COLORS } from "../Styled";
 import styled from "styled-components";
 import zakaziNotara from "../endpoints/ZakaziNotara.js";
 import getUserByName from "../endpoints/getUserByName.js";
-import SelectComponent from "./SelectComponentNotar.jsx";
-import SelectComponentGradovi from "./SelectComponentGradovi.jsx";
+import SelectComponent from "./SelectComponentNotari/SelectComponentNotar.jsx";
+import SelectComponentGradovi from "./SelectComponentGradovi/SelectComponentGradovi.jsx";
 
 const SchedulingComponent = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
