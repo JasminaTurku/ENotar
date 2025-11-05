@@ -3,13 +3,15 @@ import { Button, COLORS } from "../Styled";
 import styled from "styled-components";
 import zakaziNotara from "../endpoints/ZakaziNotara.js";
 import getUserByName from "../endpoints/getUserByName.js";
+import SelectComponent from "./SelectComponentNotar.jsx";
+import SelectComponentGradovi from "./SelectComponentGradovi.jsx";
 
 const SchedulingComponent = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     notarIme: "",
-    gradjaninIme: "",
+    gradjaninJmbg: "",
     vrstaOvere: "",
     datum: "",
     vreme: "",
@@ -35,7 +37,7 @@ const SchedulingComponent = ({ onClose }) => {
 
     if (
       !formData.notarIme ||
-      !formData.gradjaninIme ||
+      !formData.gradjaninJmbg ||
       !formData.vrstaOvere ||
       !formData.datum ||
       !formData.vreme
@@ -48,16 +50,14 @@ const SchedulingComponent = ({ onClose }) => {
     setError(null);
 
     try {
-      // First, get the gradjanin ID by name
+      // First, get the gradjanin ID by JMBG
       const gradjaninResponse = await getUserByName(
-        formData.gradjaninIme,
+        formData.gradjaninJmbg,
         "gradjanin"
       );
 
       if (!gradjaninResponse.ok) {
-        throw new Error(
-          "Nije moguće pronaći građanina sa unesenim imenom i prezimenom."
-        );
+        throw new Error("Nije moguće pronaći građanina sa unesenim JMBG-om.");
       }
 
       const gradjaninData = await gradjaninResponse.json();
@@ -97,24 +97,44 @@ const SchedulingComponent = ({ onClose }) => {
     <Card>
       <CardTitle>Brzo zakažite termin</CardTitle>
       <CardSubtitle>Unesite osnovne podatke i odaberite notara.</CardSubtitle>
-
       <Form id="zakazi">
-        <div>
-          <Label htmlFor="notar-ime">Ime i prezime notara </Label>
-          <Input
+        <FormDiv>
+          <Label htmlFor="gradovi">Grad</Label>
+          <SelectComponentGradovi
+            id="gradovi"
+            value={formData.grad}
+            onChange={handleInputChange}
+          />
+        </FormDiv>
+        <FormDiv>
+          <Label htmlFor="notar-ime">Izaberi notara </Label>
+          <SelectComponent
             id="notar-ime"
-            placeholder="Marko Marković"
             value={formData.notarIme}
             onChange={handleInputChange}
           />
-        </div>
+        </FormDiv>
+
         <div>
-          <Label htmlFor="gradjanin-ime">Ime i prezime građanina </Label>
+          <Label htmlFor="gradjanin-jmbg">JMBG građana</Label>
           <Input
-            id="gradjanin-ime"
-            placeholder="Petar Petrović"
-            value={formData.gradjaninIme}
-            onChange={handleInputChange}
+            id="gradjanin-jmbg"
+            type="text"
+            inputMode="numeric"
+            placeholder="1223456789023"
+            pattern="[0-9]{13}"
+            maxLength={13}
+            value={formData.gradjaninJmbg}
+            onChange={(e) => {
+              // Dozvoli samo cifre i ograniči dužinu
+              const numericValue = e.target.value
+                .replace(/\D/g, "")
+                .slice(0, 13);
+              setFormData((prev) => ({
+                ...prev,
+                gradjaninJmbg: numericValue,
+              }));
+            }}
           />
         </div>
 
@@ -167,6 +187,13 @@ const SchedulingComponent = ({ onClose }) => {
     </Card>
   );
 };
+
+const FormDiv = styled.div`
+  display: flex;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+`;
 
 const Card = styled.div`
   background: ${COLORS.white};
