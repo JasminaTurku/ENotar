@@ -216,7 +216,6 @@ const SchedulingComponent = ({ onClose }) => {
           >
             {loading ? "Učitavanje..." : "Zakaži"}
           </Button>
-          <Button type="button">Sačuvaj kao nacrt</Button>
           <Button type="button" onClick={onClose}>
             Otkaži
           </Button>

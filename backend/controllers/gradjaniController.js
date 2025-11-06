@@ -11,19 +11,88 @@ export const getGradjani = (req, res) => {
 };
 
 export const addGradjanin = (req, res) => {
-  const { ime, email, lozinka } = req.body;
-  db.query(
-    "INSERT INTO gradjani (ime, email, lozinka) VALUES (?, ?, ?)",
-    [ime, email, lozinka],
-    (err, result) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.status(201).json({ message: "Građanin dodat", id: result.insertId });
+  const { ime, email, lozinka, jmbg } = req.body;
+
+  console.log("\n=== REGISTRACIJA GRAĐANINA ===");
+  console.log("Podaci primljeni:", { ime, email, jmbg });
+
+  // Provera da li JMBG već postoji
+  db.query("SELECT * FROM gradjani WHERE jmbg = ?", [jmbg], (err, existing) => {
+    if (err) {
+      console.error("Greška pri proveri JMBG-a:", err);
+      return res.status(500).json({ error: err.message });
     }
-  );
+
+    if (existing.length > 0) {
+      console.log("❌ JMBG već postoji u bazi");
+      return res.status(400).json({ error: "JMBG već postoji" });
+    }
+
+    // Provera da li email već postoji
+    db.query(
+      "SELECT * FROM gradjani WHERE email = ?",
+      [email],
+      (err, existingEmail) => {
+        if (err) {
+          console.error("Greška pri proveri email-a:", err);
+          return res.status(500).json({ error: err.message });
+        }
+
+        if (existingEmail.length > 0) {
+          console.log("❌ Email već postoji u bazi");
+          return res.status(400).json({ error: "Email već postoji" });
+        }
+
+        // Insert novog građanina
+        db.query(
+          "INSERT INTO gradjani (ime, email, lozinka, jmbg) VALUES (?, ?, ?, ?)",
+          [ime, email, lozinka, jmbg],
+          (err, result) => {
+            if (err) {
+              console.error("❌ Greška pri dodavanju građanina:", err);
+              return res.status(500).json({ error: err.message });
+            }
+            console.log("✅ Građanin uspešno dodat! ID:", result.insertId);
+            console.log("================================\n");
+            res.status(201).json({
+              message: "Građanin uspešno registrovan",
+              id: result.insertId,
+            });
+          }
+        );
+      }
+    );
+  });
 };
 
 export const searchGradjani = (req, res) => {
-  const { ime, jmbg } = req.query;
+  const { ime, jmbg, email } = req.query;
+
+  // Pretraga po email-u (za login)
+  if (email) {
+    console.log(`\n=== PRETRAGA GRAĐANINA PO EMAIL-U ===`);
+    console.log(`Email primljen: "${email}"`);
+
+    db.query(
+      "SELECT * FROM gradjani WHERE email = ?",
+      [email],
+      (err, results) => {
+        if (err) {
+          console.error("Greška pri pretrazi građana po email-u:", err);
+          return res.status(500).json({ error: "Greška u bazi" });
+        }
+
+        if (results.length === 0) {
+          console.log(`❌ Građanin nije pronađen sa email: ${email}`);
+          return res.status(404).json({ error: "Građanin nije pronađen" });
+        }
+
+        console.log(`✅ Građanin pronađen:`, results[0]);
+        res.json(results[0]);
+      }
+    );
+    return;
+  }
 
   // Pretraga po JMBG-u (prioritet)
   if (jmbg) {
