@@ -11,6 +11,7 @@ export const JMBG_LENGTH = 13;
 
 // Field mapping for form inputs
 export const FIELD_MAPPING = {
+  gradovi: "grad",
   "notar-ime": "notarIme",
   "gradjanin-ime": "gradjaninIme",
   service: "vrstaOvere",

@@ -6,6 +6,7 @@ export const Card = styled.div`
   border-radius: 12px;
   padding: 18px;
   box-shadow: 0 8px 20px rgba(16, 24, 40, 0.06);
+  width: 50%;
 `;
 
 export const CardTitle = styled.h3`

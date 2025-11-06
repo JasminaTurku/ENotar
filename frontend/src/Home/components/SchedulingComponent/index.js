@@ -3,6 +3,7 @@ import { Button } from "../../Styled";
 import zakaziNotara from "../../endpoints/ZakaziNotara.js";
 import SelectComponent from "../SelectComponentNotari/SelectComponentNotar.jsx";
 import SelectComponentGradovi from "../SelectComponentGradovi/SelectComponentGradovi.jsx";
+import DocumentUpload from "./DocumentUpload.jsx";
 import { SERVICE_TYPES, JMBG_LENGTH, FIELD_MAPPING } from "./constants.js";
 import {
   validateFormData,
@@ -26,7 +27,9 @@ import {
 const SchedulingComponent = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [dokument, setDokument] = useState(null);
   const [formData, setFormData] = useState({
+    grad: "",
     notarIme: "",
     gradjaninJmbg: "",
     vrstaOvere: "",
@@ -38,10 +41,18 @@ const SchedulingComponent = ({ onClose }) => {
     const { id, value } = e.target;
     const fieldName = FIELD_MAPPING[id] || id;
 
-    setFormData((prev) => ({
-      ...prev,
-      [fieldName]: value,
-    }));
+    setFormData((prev) => {
+      const newFormData = {
+        ...prev,
+        [fieldName]: value,
+      };
+
+      if (fieldName === "grad" || id === "gradovi") {
+        newFormData.notarIme = "";
+      }
+
+      return newFormData;
+    });
   };
 
   const handleJmbgChange = (e) => {
@@ -50,6 +61,11 @@ const SchedulingComponent = ({ onClose }) => {
       ...prev,
       gradjaninJmbg: numericValue,
     }));
+  };
+
+  const handleFileSelect = (file) => {
+    setDokument(file);
+    console.log("Dokument izabran:", file);
   };
 
   const handleZakazi = async (e) => {
@@ -111,6 +127,7 @@ const SchedulingComponent = ({ onClose }) => {
             id="notar-ime"
             value={formData.notarIme}
             onChange={handleInputChange}
+            selectedGrad={formData.grad}
           />
         </FormDiv>
 
@@ -157,6 +174,14 @@ const SchedulingComponent = ({ onClose }) => {
             onChange={handleInputChange}
           />
         </Row>
+
+        <div>
+          <Label htmlFor="dokument">Postavi dokument - vrstu overe</Label>
+          <DocumentUpload
+            onFileSelect={handleFileSelect}
+            accept="image/*,.pdf"
+          />
+        </div>
 
         {error && <ErrorMessage>{error}</ErrorMessage>}
 
