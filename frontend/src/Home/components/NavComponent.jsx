@@ -17,6 +17,14 @@ export const NavComponent = ({ onLinkClick, mobile = false }) => {
     alert("Uspešno ste se odjavili!");
   };
 
+  const handleProfileClick = () => {
+    if (user.type === "notar") {
+      navigate("/profil-notara");
+    } else {
+      navigate("/profil-gradjanina");
+    }
+  };
+
   return (
     <NavStyled mobile={mobile}>
       {links.map((l) => (
@@ -32,7 +40,7 @@ export const NavComponent = ({ onLinkClick, mobile = false }) => {
 
       {isAuthenticated ? (
         <UserSection>
-          <UserButton>
+          <UserButton onClick={handleProfileClick}>
             {user.type === "notar" ? "Notar" : "Građanin"}
           </UserButton>
           <Button onClick={handleLogout}>Odjavi se</Button>
@@ -87,7 +95,12 @@ const UserButton = styled.button`
   border-radius: 6px;
   font-weight: 600;
   font-size: 0.875rem;
-  cursor: default;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: ${COLORS.indigoDark};
+  }
 `;
 
 export default NavComponent;

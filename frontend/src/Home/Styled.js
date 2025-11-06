@@ -2,14 +2,20 @@ import styled from "styled-components";
 
 const COLORS = {
   indigo: "#4f46e5",
+  indigoDark: "#3730a3",
   indigoLightBg: "#eef2ff",
   gray50: "#f9fafb",
   gray100: "#f3f4f6",
   gray200: "#e5e7eb",
+  gray300: "#d1d5db",
+  gray500: "#6b7280",
   gray600: "#4b5563",
   gray700: "#374151",
+  gray800: "#1f2937",
   white: "#ffffff",
   darkFooter: "#111827",
+  green: "#10b981",
+  orange: "#f59e0b",
 };
 
 const BREAKPOINTS = {
