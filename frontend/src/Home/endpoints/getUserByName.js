@@ -1,8 +1,14 @@
-const getUserByName = async (name, type = "gradjanin") => {
+const getUserByName = async (identifier, type = "gradjanin") => {
   try {
+    // Ako je građanin, pretražujemo po JMBG-u, ako je notar po imenu
+    const searchParam = type === "gradjanin" ? "jmbg" : "ime";
+
+    // Pravilno mapiranje ruta
+    const endpoint = type === "gradjanin" ? "gradjani" : "notari";
+
     const response = await fetch(
-      `http://localhost:5000/api/${type}i/search?ime=${encodeURIComponent(
-        name
+      `http://localhost:5000/api/${endpoint}/search?${searchParam}=${encodeURIComponent(
+        identifier
       )}`
     );
     if (!response.ok)

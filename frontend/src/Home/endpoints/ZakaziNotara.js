@@ -1,7 +1,7 @@
 // src/endpoints/ZakaziNotara.js
 const zakaziNotara = async (termin) => {
   // termin je objekat npr.
-  // { gradjanin_id: 1, notar_id: 2, vrsta_overe: "overa_potpisa", datum: "2025-11-04", vreme: "10:30", status: "zakazano" }
+  // { gradjanin_id: 1, notar_id: 2, vrsta_overe: "overa_potpisa", datum: "2025-11-04", vreme: "10:30", status: "zakazano", dokument: "base64string" }
   try {
     const response = await fetch("http://localhost:5000/api/zakazivanje", {
       method: "POST",
@@ -11,7 +11,10 @@ const zakaziNotara = async (termin) => {
       body: JSON.stringify(termin),
     });
 
-    if (!response.ok) throw new Error("Greška pri zakazivanju termina");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Greška pri zakazivanju termina");
+    }
 
     const data = await response.json();
     return data; // npr. { message: "Termin zakazan", id: 6 }

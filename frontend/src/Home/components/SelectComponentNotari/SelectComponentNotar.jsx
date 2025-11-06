@@ -18,8 +18,8 @@ const SelectComponent = ({ value, onChange, id, selectedGrad }) => {
         {selectedGrad ? "Izaberite notara" : "Prvo izaberite grad"}
       </option>
       {notari.map((notar) => (
-        <option key={notar._id} value={`${notar.ime} ${notar.prezime}`}>
-          {notar.ime} {notar.prezime}
+        <option key={notar.id} value={notar.ime}>
+          {notar.ime}
         </option>
       ))}
     </StyledSelect>

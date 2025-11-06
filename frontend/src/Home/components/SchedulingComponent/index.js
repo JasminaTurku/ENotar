@@ -68,13 +68,30 @@ const SchedulingComponent = ({ onClose }) => {
     console.log("Dokument izabran:", file);
   };
 
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const handleZakazi = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
 
     // Validate form data
     const validation = validateFormData(formData);
     if (!validation.isValid) {
       setError(validation.error);
+      return;
+    }
+
+    // Validate document
+    if (!dokument) {
+      setError("Molimo da uploadujete dokument");
       return;
     }
 
@@ -88,6 +105,9 @@ const SchedulingComponent = ({ onClose }) => {
         fetchUserData(formData.notarIme, "notar"),
       ]);
 
+      // Convert document to Base64
+      const dokumentBase64 = await convertFileToBase64(dokument);
+
       // Create appointment object
       const termin = {
         gradjanin_id: gradjaninId,
@@ -96,10 +116,12 @@ const SchedulingComponent = ({ onClose }) => {
         datum: formData.datum,
         vreme: formData.vreme,
         status: "zakazano",
+        dokument: dokumentBase64,
       };
 
       const data = await zakaziNotara(termin);
       console.log("Termin zakazan:", data);
+      alert("Termin uspešno zakazan!");
       onClose?.();
     } catch (err) {
       setError(err.message);

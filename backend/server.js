@@ -12,12 +12,14 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" })); // Povećan limit za Base64 dokumente
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Rute
 app.use("/api/gradjani", gradjaniRoute);
 app.use("/api/notari", notariRoute);
 app.use("/api/zakazi", zakaziRoute);
+app.use("/api/zakazivanje", zakaziRoute); // Alternativna ruta za kompatibilnost
 
 // Test ruta
 app.get("/", (req, res) => {

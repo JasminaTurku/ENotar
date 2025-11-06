@@ -17,9 +17,10 @@ export const searchNotari = (req, res) => {
     return res.status(400).json({ error: "Parametar 'ime' je obavezan" });
   }
 
+  // Pretraga po punom imenu
   db.query(
-    "SELECT * FROM notari WHERE ime LIKE ?",
-    [`%${ime}%`],
+    "SELECT * FROM notari WHERE ime = ? OR ime LIKE ?",
+    [ime, `%${ime}%`],
     (err, results) => {
       if (err) {
         console.error("Greška pri pretrazi notara:", err);
@@ -27,9 +28,11 @@ export const searchNotari = (req, res) => {
       }
 
       if (results.length === 0) {
+        console.log(`Notar nije pronađen sa imenom: ${ime}`);
         return res.status(404).json({ error: "Notar nije pronađen" });
       }
 
+      console.log(`Notar pronađen:`, results[0]);
       res.json(results[0]); // Vraćamo prvog notara koji se poklapa
     }
   );
