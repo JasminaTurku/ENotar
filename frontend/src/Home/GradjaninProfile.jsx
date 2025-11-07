@@ -31,10 +31,43 @@ const GradjaninProfile = () => {
     }
   };
 
+  const handlePrihvatiIzmenu = async (terminId) => {
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/zakazi/${terminId}/prihvati`
+      );
+      alert("Uspešno ste prihvatili izmenjeni termin!");
+      fetchTermini(); // Osvježi listu
+    } catch (error) {
+      console.error("Greška pri prihvatanju termina:", error);
+      alert("Greška pri prihvatanju termina");
+    }
+  };
+
+  const handleOtkaziTermin = async (terminId) => {
+    const potvrda = window.confirm(
+      "Da li ste sigurni da želite otkazati ovaj termin?"
+    );
+    if (!potvrda) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/api/zakazi/${terminId}`);
+      alert("Termin je uspešno otkazan!");
+      fetchTermini(); // Osvježi listu
+    } catch (error) {
+      console.error("Greška pri otkazivanju termina:", error);
+      alert("Greška pri otkazivanju termina");
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/");
   };
+
+  const neprocitaneNotifikacije = termini.filter(
+    (t) => t.izmena_notifikacija === 1
+  ).length;
 
   if (!user || user.type !== "gradjanin") {
     navigate("/");
@@ -72,7 +105,14 @@ const GradjaninProfile = () => {
         </Section>
 
         <Section>
-          <SectionTitle>Moji termini ({termini.length})</SectionTitle>
+          <SectionTitleWrapper>
+            <SectionTitle>Moji termini ({termini.length})</SectionTitle>
+            {neprocitaneNotifikacije > 0 && (
+              <NotificationBadge>
+                {neprocitaneNotifikacije} nova izmena
+              </NotificationBadge>
+            )}
+          </SectionTitleWrapper>
           {loading ? (
             <EmptyState>Učitavanje termina...</EmptyState>
           ) : termini.length === 0 ? (
@@ -80,7 +120,35 @@ const GradjaninProfile = () => {
           ) : (
             <TerminiList>
               {termini.map((termin) => (
-                <TerminCard key={termin.id}>
+                <TerminCard
+                  key={termin.id}
+                  hasNotification={termin.izmena_notifikacija === 1}
+                >
+                  {termin.izmena_notifikacija === 1 && (
+                    <NotificationAlert>
+                      <AlertContent>
+                        <AlertIcon>⚠️</AlertIcon>
+                        <AlertText>
+                          Notar je izmenio datum ili vreme ovog termina!
+                          <br />
+                          Molimo Vas da pregledate nove podatke i odlučite da li
+                          prihvatate izmenu.
+                        </AlertText>
+                      </AlertContent>
+                      <AlertActions>
+                        <AcceptButton
+                          onClick={() => handlePrihvatiIzmenu(termin.id)}
+                        >
+                          ✓ Prihvatam
+                        </AcceptButton>
+                        <RejectButton
+                          onClick={() => handleOtkaziTermin(termin.id)}
+                        >
+                          ✗ Otkaži termin
+                        </RejectButton>
+                      </AlertActions>
+                    </NotificationAlert>
+                  )}
                   <TerminHeader>
                     <TerminTitle>{termin.vrsta_overe}</TerminTitle>
                     <StatusBadge status={termin.status}>
@@ -125,6 +193,15 @@ const GradjaninProfile = () => {
                         </ViewDocButton>
                       </InfoRow>
                     )}
+                    {termin.izmena_notifikacija !== 1 && (
+                      <TerminActions>
+                        <CancelTerminButton
+                          onClick={() => handleOtkaziTermin(termin.id)}
+                        >
+                          Otkaži termin
+                        </CancelTerminButton>
+                      </TerminActions>
+                    )}
                   </TerminInfo>
                 </TerminCard>
               ))}
@@ -133,7 +210,7 @@ const GradjaninProfile = () => {
         </Section>
 
         <ButtonGroup>
-          <Button primary onClick={() => navigate("/")}>
+          <Button primary onClick={() => navigate("/?zakazi=true")}>
             Zakaži novi termin
           </Button>
           <Button onClick={handleLogout}>Odjavi se</Button>
@@ -238,8 +315,9 @@ const TerminiList = styled.div`
 `;
 
 const TerminCard = styled.div`
-  background: ${COLORS.gray50};
-  border: 1px solid ${COLORS.gray200};
+  background: ${(props) => (props.hasNotification ? "#fffbeb" : COLORS.gray50)};
+  border: 2px solid
+    ${(props) => (props.hasNotification ? COLORS.orange : COLORS.gray200)};
   border-radius: 8px;
   padding: 1.5rem;
   transition: box-shadow 0.2s;
@@ -308,5 +386,119 @@ const ViewDocButton = styled.button`
 
   &:hover {
     background-color: ${COLORS.indigoDark};
+  }
+`;
+
+const SectionTitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+`;
+
+const NotificationBadge = styled.span`
+  padding: 0.25rem 0.75rem;
+  background-color: ${COLORS.orange};
+  color: white;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+`;
+
+const NotificationAlert = styled.div`
+  background-color: #fef3c7;
+  border: 2px solid ${COLORS.orange};
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const AlertContent = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+`;
+
+const AlertIcon = styled.span`
+  font-size: 1.5rem;
+  flex-shrink: 0;
+`;
+
+const AlertText = styled.div`
+  color: #92400e;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.5;
+`;
+
+const AlertActions = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+`;
+
+const AcceptButton = styled.button`
+  padding: 0.625rem 1.25rem;
+  background-color: ${COLORS.green};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const RejectButton = styled.button`
+  padding: 0.625rem 1.25rem;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const TerminActions = styled.div`
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${COLORS.gray200};
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const CancelTerminButton = styled.button`
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background-color: #dc2626;
+    color: white;
   }
 `;

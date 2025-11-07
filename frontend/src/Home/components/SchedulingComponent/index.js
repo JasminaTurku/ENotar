@@ -37,6 +37,17 @@ const SchedulingComponent = ({ onClose }) => {
     vreme: "",
   });
 
+  // Dobavi današnji datum u formatu YYYY-MM-DD
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const minDate = getTodayDate();
+
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     const fieldName = FIELD_MAPPING[id] || id;
@@ -188,6 +199,7 @@ const SchedulingComponent = ({ onClose }) => {
             id="datum"
             value={formData.datum}
             onChange={handleInputChange}
+            min={minDate}
           />
           <Input
             type="time"

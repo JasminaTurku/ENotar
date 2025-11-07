@@ -10,6 +10,19 @@ const NotarProfile = () => {
   const { user, logout } = useAuth();
   const [termini, setTermini] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData] = useState({ datum: "", vreme: "" });
+
+  // Dobavi današnji datum u formatu YYYY-MM-DD
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const minDate = getTodayDate();
 
   useEffect(() => {
     if (user && user.id) {
@@ -28,6 +41,34 @@ const NotarProfile = () => {
       console.error("Greška pri učitavanju termina:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEdit = (termin) => {
+    setEditingId(termin.id);
+    setEditData({
+      datum: termin.datum.split("T")[0],
+      vreme: termin.vreme,
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditData({ datum: "", vreme: "" });
+  };
+
+  const handleSaveEdit = async (terminId) => {
+    try {
+      await axios.put(`http://localhost:5000/api/zakazi/${terminId}`, {
+        datum: editData.datum,
+        vreme: editData.vreme,
+      });
+      alert("Termin uspešno ažuriran!");
+      setEditingId(null);
+      fetchTermini();
+    } catch (error) {
+      console.error("Greška pri ažuriranju termina:", error);
+      alert("Greška pri ažuriranju termina");
     }
   };
 
@@ -102,13 +143,34 @@ const NotarProfile = () => {
                     </InfoRow>
                     <InfoRow>
                       <InfoLabel>Datum:</InfoLabel>
-                      <InfoText>
-                        {new Date(termin.datum).toLocaleDateString("sr-RS")}
-                      </InfoText>
+                      {editingId === termin.id ? (
+                        <EditInput
+                          type="date"
+                          value={editData.datum}
+                          onChange={(e) =>
+                            setEditData({ ...editData, datum: e.target.value })
+                          }
+                          min={minDate}
+                        />
+                      ) : (
+                        <InfoText>
+                          {new Date(termin.datum).toLocaleDateString("sr-RS")}
+                        </InfoText>
+                      )}
                     </InfoRow>
                     <InfoRow>
                       <InfoLabel>Vreme:</InfoLabel>
-                      <InfoText>{termin.vreme}</InfoText>
+                      {editingId === termin.id ? (
+                        <EditInput
+                          type="time"
+                          value={editData.vreme}
+                          onChange={(e) =>
+                            setEditData({ ...editData, vreme: e.target.value })
+                          }
+                        />
+                      ) : (
+                        <InfoText>{termin.vreme}</InfoText>
+                      )}
                     </InfoRow>
                     {termin.dokument && (
                       <InfoRow>
@@ -125,6 +187,22 @@ const NotarProfile = () => {
                         </ViewDocButton>
                       </InfoRow>
                     )}
+                    <ActionButtons>
+                      {editingId === termin.id ? (
+                        <>
+                          <SaveButton onClick={() => handleSaveEdit(termin.id)}>
+                            Sačuvaj
+                          </SaveButton>
+                          <CancelButton onClick={handleCancelEdit}>
+                            Otkaži
+                          </CancelButton>
+                        </>
+                      ) : (
+                        <EditButton onClick={() => handleEdit(termin)}>
+                          Izmeni datum/vreme
+                        </EditButton>
+                      )}
+                    </ActionButtons>
                   </TerminInfo>
                 </TerminCard>
               ))}
@@ -133,9 +211,6 @@ const NotarProfile = () => {
         </Section>
 
         <ButtonGroup>
-          <Button primary onClick={() => navigate("/")}>
-            Zakaži novi termin
-          </Button>
           <Button onClick={handleLogout}>Odjavi se</Button>
         </ButtonGroup>
       </ProfileCard>
@@ -308,5 +383,72 @@ const ViewDocButton = styled.button`
 
   &:hover {
     background-color: ${COLORS.indigoDark};
+  }
+`;
+
+const EditInput = styled.input`
+  padding: 0.5rem;
+  border: 1px solid ${COLORS.gray300};
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: ${COLORS.gray800};
+  width: 200px;
+
+  &:focus {
+    outline: none;
+    border-color: ${COLORS.indigo};
+  }
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${COLORS.gray200};
+`;
+
+const EditButton = styled.button`
+  padding: 0.5rem 1rem;
+  background-color: ${COLORS.indigo};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: ${COLORS.indigoDark};
+  }
+`;
+
+const SaveButton = styled.button`
+  padding: 0.5rem 1rem;
+  background-color: ${COLORS.green};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const CancelButton = styled.button`
+  padding: 0.5rem 1rem;
+  background-color: ${COLORS.gray500};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover {
+    opacity: 0.9;
   }
 `;

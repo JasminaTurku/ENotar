@@ -91,6 +91,7 @@ export const getZakazivanjaByGradjanin = (req, res) => {
       z.vreme,
       z.status,
       z.dokument,
+      z.izmena_notifikacija,
       n.ime as notar_ime,
       n.email as notar_email,
       n.gradovi as notar_grad
@@ -110,5 +111,100 @@ export const getZakazivanjaByGradjanin = (req, res) => {
     );
     console.log("==============================\n");
     res.json(results);
+  });
+};
+
+export const updateZakazivanje = (req, res) => {
+  const { id } = req.params;
+  const { datum, vreme } = req.body;
+
+  console.log("\n=== AŽURIRANJE ZAKAZIVANJA ===");
+  console.log("Zakazivanje ID:", id);
+  console.log("Novi podaci:", { datum, vreme });
+
+  // Postavi izmena_notifikacija na TRUE kada notar izmeni termin
+  const query =
+    "UPDATE zakazivanja SET datum = ?, vreme = ?, izmena_notifikacija = TRUE WHERE id = ?";
+
+  db.query(query, [datum, vreme, id], (err, result) => {
+    if (err) {
+      console.error("❌ Greška pri ažuriranju zakazivanja:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    if (result.affectedRows === 0) {
+      console.log("⚠️ Zakazivanje nije pronađeno");
+      return res.status(404).json({ error: "Zakazivanje nije pronađeno" });
+    }
+    console.log("✅ Zakazivanje uspešno ažurirano, notifikacija postavljena");
+    console.log("==============================\n");
+    res.json({ message: "Termin uspešno ažuriran" });
+  });
+};
+
+export const oznaciNotifikacijuProcitanom = (req, res) => {
+  const { id } = req.params;
+
+  console.log("\n=== OZNAČAVANJE NOTIFIKACIJE KAO PROČITANE ===");
+  console.log("Zakazivanje ID:", id);
+
+  const query =
+    "UPDATE zakazivanja SET izmena_notifikacija = FALSE WHERE id = ?";
+
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      console.error("❌ Greška pri označavanju notifikacije:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    console.log("✅ Notifikacija označena kao pročitana");
+    console.log("==============================\n");
+    res.json({ message: "Notifikacija pročitana" });
+  });
+};
+
+export const prihvatiIzmenu = (req, res) => {
+  const { id } = req.params;
+
+  console.log("\n=== PRIHVATANJE IZMENJENOG TERMINA ===");
+  console.log("Zakazivanje ID:", id);
+
+  // Postavi izmena_notifikacija na FALSE i potvrdi status
+  const query =
+    "UPDATE zakazivanja SET izmena_notifikacija = FALSE, status = 'zakazano' WHERE id = ?";
+
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      console.error("❌ Greška pri prihvatanju izmene:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    if (result.affectedRows === 0) {
+      console.log("⚠️ Zakazivanje nije pronađeno");
+      return res.status(404).json({ error: "Zakazivanje nije pronađeno" });
+    }
+    console.log("✅ Građanin je prihvatio izmenjeni termin");
+    console.log("==============================\n");
+    res.json({ message: "Izmena prihvaćena" });
+  });
+};
+
+export const deleteZakazivanje = (req, res) => {
+  const { id } = req.params;
+
+  console.log("\n=== BRISANJE ZAKAZIVANJA ===");
+  console.log("Zakazivanje ID:", id);
+
+  const query = "DELETE FROM zakazivanja WHERE id = ?";
+
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      console.error("❌ Greška pri brisanju zakazivanja:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    if (result.affectedRows === 0) {
+      console.log("⚠️ Zakazivanje nije pronađeno");
+      return res.status(404).json({ error: "Zakazivanje nije pronađeno" });
+    }
+    console.log("✅ Zakazivanje uspešno obrisano");
+    console.log("==============================\n");
+    res.json({ message: "Termin otkazan" });
   });
 };

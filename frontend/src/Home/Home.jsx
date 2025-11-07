@@ -2,7 +2,8 @@ import LogoComponent from "./components/LogoComponent.jsx";
 import HeaderComponent from "./components/HeaderComponent.jsx";
 import FeatureCardWrapper from "./components/FeatureCardWrapper.jsx";
 import SchedulingComponent from "./components/SchedulingComponent.jsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import HowToUseComponent from "./components/HowToUseComponent.jsx";
 import ServicesComponent from "./components/ServicesComponent.jsx";
 import AboutComponent from "./components/AboutComponent.jsx";
@@ -13,7 +14,17 @@ import styled from "styled-components";
 import { COLORS, BREAKPOINTS } from "./Styled";
 
 export const Home = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showScheduling, setShowScheduling] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("zakazi") === "true") {
+      setShowScheduling(true);
+      // Skloni parametar iz URL-a
+      searchParams.delete("zakazi");
+      setSearchParams(searchParams);
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleSchedulingClose = (e) => {
     e.preventDefault();

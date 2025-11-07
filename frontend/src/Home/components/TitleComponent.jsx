@@ -1,8 +1,13 @@
 import React from "react";
 import { COLORS, BREAKPOINTS } from "../Styled";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const TitleComponent = ({ onOpen }) => {
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = {
@@ -28,6 +33,21 @@ const TitleComponent = ({ onOpen }) => {
     if (typeof onOpen === "function") onOpen();
   };
 
+  const handleStatusClick = (e) => {
+    e.preventDefault();
+
+    if (!isAuthenticated) {
+      // Nije prijavljen - idi na login
+      navigate("/login");
+    } else if (user.type === "gradjanin") {
+      // Prijavljen kao građanin - idi na profil građanina
+      navigate("/profil-gradjanina");
+    } else if (user.type === "notar") {
+      // Prijavljen kao notar - idi na profil notara
+      navigate("/profil-notara");
+    }
+  };
+
   return (
     <>
       <HeroTitle>Digitalna overa dokumenata, brzo i jednostavno</HeroTitle>
@@ -43,7 +63,9 @@ const TitleComponent = ({ onOpen }) => {
         >
           Zakaži termin
         </PrimaryButton>
-        <SecondaryButton href="#status">Proveri status overe</SecondaryButton>
+        <SecondaryButton href="#status" onClick={handleStatusClick}>
+          Proveri status overe
+        </SecondaryButton>
       </HeroActions>
     </>
   );
