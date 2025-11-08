@@ -27,6 +27,7 @@ const StyledSelect = styled.select`
   outline: none;
   font-size: 14px;
   width: 100%;
+  max-width: 300px;
   margin-top: 6px;
   display: block;
 

@@ -34,7 +34,8 @@ const StyledSelect = styled.select`
   border: 1px solid ${COLORS.gray200};
   outline: none;
   font-size: 14px;
-  width: 60%;
+  width: 100%;
+  max-width: 300px;
   margin-top: 6px;
   display: block;
 

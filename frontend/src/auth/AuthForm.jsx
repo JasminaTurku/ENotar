@@ -161,8 +161,6 @@ const AuthForm = ({ onClose }) => {
   return (
     <AuthContainer>
       <AuthCard>
-        <CloseButton onClick={onClose}>&times;</CloseButton>
-
         <TabContainer>
           <Tab
             active={activeTab === "login"}
@@ -176,6 +174,7 @@ const AuthForm = ({ onClose }) => {
           >
             Registracija
           </Tab>
+          <CloseButton onClick={onClose}>&times;</CloseButton>
         </TabContainer>
 
         {activeTab === "login" ? (
@@ -355,13 +354,18 @@ const AuthCard = styled.div`
   overflow-y: auto;
 `;
 
+const TabContainer = styled.div`
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid ${COLORS.gray200};
+  position: relative;
+`;
+
 const CloseButton = styled.button`
-  position: absolute;
-  top: 15px;
-  right: 15px;
   background: none;
   border: none;
   font-size: 28px;
+  line-height: 1;
   cursor: pointer;
   color: ${COLORS.gray500};
   width: 35px;
@@ -371,6 +375,9 @@ const CloseButton = styled.button`
   justify-content: center;
   border-radius: 50%;
   transition: all 0.2s;
+  padding: 0;
+  margin-left: auto;
+  margin-right: 10px;
 
   &:hover {
     background-color: ${COLORS.gray100};
@@ -378,14 +385,9 @@ const CloseButton = styled.button`
   }
 `;
 
-const TabContainer = styled.div`
-  display: flex;
-  border-bottom: 2px solid ${COLORS.gray200};
-`;
-
 const Tab = styled.button`
-  flex: 1;
-  padding: 1rem;
+  flex: 0 1 auto;
+  padding: 1rem 1.5rem;
   background: none;
   border: none;
   font-size: 1rem;
@@ -477,6 +479,16 @@ const Select = styled.select`
   transition: all 0.2s;
   background-color: white;
   cursor: pointer;
+  height: auto;
+  min-height: 48px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25rem;
+  padding-right: 2.5rem;
 
   &:focus {
     outline: none;

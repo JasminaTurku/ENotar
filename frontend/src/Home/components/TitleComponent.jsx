@@ -48,6 +48,26 @@ const TitleComponent = ({ onOpen }) => {
     }
   };
 
+  const handleNotarTerminiClick = (e) => {
+    e.preventDefault();
+    navigate("/profil-notara");
+  };
+
+  // Ako je prijavljen kao notar, prikaži posebno dugme
+  if (isAuthenticated && user.type === "notar") {
+    return (
+      <>
+        <HeroTitle>Digitalna overa dokumenata, brzo i jednostavno</HeroTitle>
+        <HeroText>Pogledajte/Ažurirajte termine vaših klijenata.</HeroText>
+        <HeroActions>
+          <PrimaryButton href="#profil" onClick={handleNotarTerminiClick}>
+            Pogledajte/Ažurirajte termine vaših klijenata
+          </PrimaryButton>
+        </HeroActions>
+      </>
+    );
+  }
+
   return (
     <>
       <HeroTitle>Digitalna overa dokumenata, brzo i jednostavno</HeroTitle>
