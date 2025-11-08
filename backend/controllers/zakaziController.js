@@ -54,12 +54,15 @@ export const getZakazivanjaByNotar = (req, res) => {
       z.vreme,
       z.status,
       z.dokument,
+      z.otkazivanje_notifikacija,
+      z.otkazao_korisnik,
       g.ime as gradjanin_ime,
       g.email as gradjanin_email,
       g.jmbg as gradjanin_jmbg
     FROM zakazivanja z
     LEFT JOIN gradjani g ON z.gradjanin_id = g.id
     WHERE z.notar_id = ?
+      AND NOT (z.otkazivanje_notifikacija = TRUE AND z.otkazao_korisnik = 'notar')
     ORDER BY z.datum DESC, z.vreme DESC
   `;
 
@@ -92,12 +95,15 @@ export const getZakazivanjaByGradjanin = (req, res) => {
       z.status,
       z.dokument,
       z.izmena_notifikacija,
+      z.otkazivanje_notifikacija,
+      z.otkazao_korisnik,
       n.ime as notar_ime,
       n.email as notar_email,
       n.gradovi as notar_grad
     FROM zakazivanja z
     LEFT JOIN notari n ON z.notar_id = n.id
     WHERE z.gradjanin_id = ?
+      AND NOT (z.otkazivanje_notifikacija = TRUE AND z.otkazao_korisnik = 'gradjanin')
     ORDER BY z.datum DESC, z.vreme DESC
   `;
 
@@ -188,23 +194,60 @@ export const prihvatiIzmenu = (req, res) => {
 
 export const deleteZakazivanje = (req, res) => {
   const { id } = req.params;
+  const { otkazao } = req.body; // 'notar' ili 'gradjanin'
 
-  console.log("\n=== BRISANJE ZAKAZIVANJA ===");
+  console.log("\n=== OTKAZIVANJE TERMINA ===");
   console.log("Zakazivanje ID:", id);
+  console.log("Otkazao:", otkazao);
 
-  const query = "DELETE FROM zakazivanja WHERE id = ?";
+  // Postavi notifikaciju o otkazivanju
+  // Termin ostaje u bazi dok druga strana ne potvrdi
+  const query = `
+    UPDATE zakazivanja 
+    SET otkazivanje_notifikacija = TRUE, 
+        otkazao_korisnik = ? 
+    WHERE id = ?
+  `;
 
-  db.query(query, [id], (err, result) => {
+  db.query(query, [otkazao, id], (err, result) => {
     if (err) {
-      console.error("❌ Greška pri brisanju zakazivanja:", err);
+      console.error("❌ Greška pri otkazivanju termina:", err);
       return res.status(500).json({ error: err.message });
     }
     if (result.affectedRows === 0) {
       console.log("⚠️ Zakazivanje nije pronađeno");
       return res.status(404).json({ error: "Zakazivanje nije pronađeno" });
     }
-    console.log("✅ Zakazivanje uspešno obrisano");
+    console.log(
+      `✅ ${
+        otkazao === "notar" ? "Notar" : "Građanin"
+      } je otkazao termin, notifikacija poslata`
+    );
     console.log("==============================\n");
-    res.json({ message: "Termin otkazan" });
+    res.json({ message: "Termin otkazan, druga strana će biti obaveštena" });
+  });
+};
+
+export const potvrdiBrisanje = (req, res) => {
+  const { id } = req.params;
+
+  console.log("\n=== POTVRĐIVANJE I BRISANJE TERMINA ===");
+  console.log("Zakazivanje ID:", id);
+
+  // Sada stvarno obriši termin nakon što je korisnik video notifikaciju
+  const query = "DELETE FROM zakazivanja WHERE id = ?";
+
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      console.error("❌ Greška pri brisanju termina:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    if (result.affectedRows === 0) {
+      console.log("⚠️ Zakazivanje nije pronađeno");
+      return res.status(404).json({ error: "Zakazivanje nije pronađeno" });
+    }
+    console.log("✅ Termin uspešno obrisan iz baze");
+    console.log("==============================\n");
+    res.json({ message: "Termin obrisan" });
   });
 };

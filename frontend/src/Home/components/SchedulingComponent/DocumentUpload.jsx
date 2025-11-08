@@ -84,7 +84,7 @@ const DocumentUpload = ({ onFileSelect, accept = "image/*,.pdf" }) => {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          isDragging={isDragging}
+          $isDragging={isDragging}
         >
           <UploadIcon>
             <svg
@@ -163,14 +163,14 @@ const HiddenInput = styled.input`
 
 const DropZone = styled.div`
   border: 2px dashed
-    ${(props) => (props.isDragging ? COLORS.indigo : COLORS.gray200)};
+    ${(props) => (props.$isDragging ? COLORS.indigo : COLORS.gray200)};
   border-radius: 12px;
   padding: 40px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
   background-color: ${(props) =>
-    props.isDragging ? "rgba(79, 70, 229, 0.05)" : "transparent"};
+    props.$isDragging ? "rgba(79, 70, 229, 0.05)" : "transparent"};
 
   &:hover {
     border-color: ${COLORS.indigo};

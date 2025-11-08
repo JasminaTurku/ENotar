@@ -51,12 +51,26 @@ const GradjaninProfile = () => {
     if (!potvrda) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/zakazi/${terminId}`);
+      await axios.delete(`http://localhost:5000/api/zakazi/${terminId}`, {
+        data: { otkazao: "gradjanin" },
+      });
       alert("Termin je uspešno otkazan!");
-      fetchTermini(); // Osvježi listu
+      fetchTermini(); // Osvježi listu - termin će nestati jer backend filtrira otkazane termine
     } catch (error) {
       console.error("Greška pri otkazivanju termina:", error);
       alert("Greška pri otkazivanju termina");
+    }
+  };
+
+  const handlePotvrdiBrisanje = async (terminId) => {
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/zakazi/${terminId}/potvrdi`
+      );
+      fetchTermini(); // Osvježi listu
+    } catch (error) {
+      console.error("Greška pri potvrđivanju brisanja:", error);
+      alert("Greška pri potvrđivanju brisanja termina");
     }
   };
 
@@ -66,7 +80,7 @@ const GradjaninProfile = () => {
   };
 
   const neprocitaneNotifikacije = termini.filter(
-    (t) => t.izmena_notifikacija === 1
+    (t) => t.izmena_notifikacija === 1 || t.otkazivanje_notifikacija === 1
   ).length;
 
   if (!user || user.type !== "gradjanin") {
@@ -122,8 +136,31 @@ const GradjaninProfile = () => {
               {termini.map((termin) => (
                 <TerminCard
                   key={termin.id}
-                  hasNotification={termin.izmena_notifikacija === 1}
+                  hasNotification={
+                    termin.izmena_notifikacija === 1 ||
+                    termin.otkazivanje_notifikacija === 1
+                  }
                 >
+                  {termin.otkazivanje_notifikacija === 1 &&
+                    termin.otkazao_korisnik === "notar" && (
+                      <NotificationAlert>
+                        <AlertContent>
+                          <AlertIcon>🚫</AlertIcon>
+                          <AlertText>
+                            Notar je otkazao ovaj termin!
+                            <br />
+                            Možete zakazati novi termin klikom na dugme ispod.
+                          </AlertText>
+                        </AlertContent>
+                        <AlertActions>
+                          <AcceptButton
+                            onClick={() => handlePotvrdiBrisanje(termin.id)}
+                          >
+                            ✓ Razumem, obriši termin
+                          </AcceptButton>
+                        </AlertActions>
+                      </NotificationAlert>
+                    )}
                   {termin.izmena_notifikacija === 1 && (
                     <NotificationAlert>
                       <AlertContent>
@@ -193,15 +230,16 @@ const GradjaninProfile = () => {
                         </ViewDocButton>
                       </InfoRow>
                     )}
-                    {termin.izmena_notifikacija !== 1 && (
-                      <TerminActions>
-                        <CancelTerminButton
-                          onClick={() => handleOtkaziTermin(termin.id)}
-                        >
-                          Otkaži termin
-                        </CancelTerminButton>
-                      </TerminActions>
-                    )}
+                    {termin.izmena_notifikacija !== 1 &&
+                      termin.otkazivanje_notifikacija !== 1 && (
+                        <TerminActions>
+                          <CancelTerminButton
+                            onClick={() => handleOtkaziTermin(termin.id)}
+                          >
+                            Otkaži termin
+                          </CancelTerminButton>
+                        </TerminActions>
+                      )}
                   </TerminInfo>
                 </TerminCard>
               ))}

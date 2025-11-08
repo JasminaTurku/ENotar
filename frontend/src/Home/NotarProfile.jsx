@@ -72,10 +72,44 @@ const NotarProfile = () => {
     }
   };
 
+  const handleOtkaziTermin = async (terminId) => {
+    const potvrda = window.confirm(
+      "Da li ste sigurni da želite otkazati ovaj termin?"
+    );
+    if (!potvrda) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/api/zakazi/${terminId}`, {
+        data: { otkazao: "notar" },
+      });
+      alert("Termin je uspešno otkazan! Građanin će biti obavešten.");
+      fetchTermini();
+    } catch (error) {
+      console.error("Greška pri otkazivanju termina:", error);
+      alert("Greška pri otkazivanju termina");
+    }
+  };
+
+  const handlePotvrdiBrisanje = async (terminId) => {
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/zakazi/${terminId}/potvrdi`
+      );
+      fetchTermini();
+    } catch (error) {
+      console.error("Greška pri potvrđivanju brisanja:", error);
+      alert("Greška pri potvrđivanju brisanja termina");
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/");
   };
+
+  const neprocitaneNotifikacije = termini.filter(
+    (t) => t.otkazivanje_notifikacija === 1
+  ).length;
 
   if (!user || user.type !== "notar") {
     navigate("/");
@@ -113,7 +147,14 @@ const NotarProfile = () => {
         </Section>
 
         <Section>
-          <SectionTitle>Moji termini ({termini.length})</SectionTitle>
+          <SectionTitleWrapper>
+            <SectionTitle>Moji termini ({termini.length})</SectionTitle>
+            {neprocitaneNotifikacije > 0 && (
+              <NotificationBadge>
+                {neprocitaneNotifikacije} otkazivanje
+              </NotificationBadge>
+            )}
+          </SectionTitleWrapper>
           {loading ? (
             <EmptyState>Učitavanje termina...</EmptyState>
           ) : termini.length === 0 ? (
@@ -121,7 +162,31 @@ const NotarProfile = () => {
           ) : (
             <TerminiList>
               {termini.map((termin) => (
-                <TerminCard key={termin.id}>
+                <TerminCard
+                  key={termin.id}
+                  hasNotification={termin.otkazivanje_notifikacija === 1}
+                >
+                  {termin.otkazivanje_notifikacija === 1 &&
+                    termin.otkazao_korisnik === "gradjanin" && (
+                      <NotificationAlert>
+                        <AlertContent>
+                          <AlertIcon>🚫</AlertIcon>
+                          <AlertText>
+                            Građanin je otkazao ovaj termin!
+                            <br />
+                            Kliknite na dugme ispod da potvrdite i obrišete
+                            termin.
+                          </AlertText>
+                        </AlertContent>
+                        <AlertActions>
+                          <AcceptButton
+                            onClick={() => handlePotvrdiBrisanje(termin.id)}
+                          >
+                            ✓ Razumem, obriši termin
+                          </AcceptButton>
+                        </AlertActions>
+                      </NotificationAlert>
+                    )}
                   <TerminHeader>
                     <TerminTitle>{termin.vrsta_overe}</TerminTitle>
                     <StatusBadge status={termin.status}>
@@ -198,9 +263,18 @@ const NotarProfile = () => {
                           </CancelButton>
                         </>
                       ) : (
-                        <EditButton onClick={() => handleEdit(termin)}>
-                          Izmeni datum/vreme
-                        </EditButton>
+                        <>
+                          <EditButton onClick={() => handleEdit(termin)}>
+                            Izmeni datum/vreme
+                          </EditButton>
+                          {termin.otkazivanje_notifikacija !== 1 && (
+                            <CancelTerminButton
+                              onClick={() => handleOtkaziTermin(termin.id)}
+                            >
+                              Otkaži termin
+                            </CancelTerminButton>
+                          )}
+                        </>
                       )}
                     </ActionButtons>
                   </TerminInfo>
@@ -313,8 +387,9 @@ const TerminiList = styled.div`
 `;
 
 const TerminCard = styled.div`
-  background: ${COLORS.gray50};
-  border: 1px solid ${COLORS.gray200};
+  background: ${(props) => (props.hasNotification ? "#fffbeb" : COLORS.gray50)};
+  border: 2px solid
+    ${(props) => (props.hasNotification ? COLORS.orange : COLORS.gray200)};
   border-radius: 8px;
   padding: 1.5rem;
   transition: box-shadow 0.2s;
@@ -450,5 +525,92 @@ const CancelButton = styled.button`
 
   &:hover {
     opacity: 0.9;
+  }
+`;
+
+const SectionTitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+`;
+
+const NotificationBadge = styled.span`
+  padding: 0.25rem 0.75rem;
+  background-color: ${COLORS.orange};
+  color: white;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+`;
+
+const NotificationAlert = styled.div`
+  background-color: #fef3c7;
+  border: 2px solid ${COLORS.orange};
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const AlertContent = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+`;
+
+const AlertIcon = styled.span`
+  font-size: 1.5rem;
+  flex-shrink: 0;
+`;
+
+const AlertText = styled.div`
+  color: #92400e;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.5;
+`;
+
+const AlertActions = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+`;
+
+const AcceptButton = styled.button`
+  padding: 0.625rem 1.25rem;
+  background-color: ${COLORS.green};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const CancelTerminButton = styled.button`
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background-color: #dc2626;
+    color: white;
   }
 `;

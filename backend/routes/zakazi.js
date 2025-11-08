@@ -7,6 +7,7 @@ import {
   oznaciNotifikacijuProcitanom,
   prihvatiIzmenu,
   deleteZakazivanje,
+  potvrdiBrisanje,
 } from "../controllers/zakaziController.js";
 
 const router = express.Router();
@@ -18,5 +19,6 @@ router.put("/:id", updateZakazivanje);
 router.patch("/:id/procitano", oznaciNotifikacijuProcitanom);
 router.patch("/:id/prihvati", prihvatiIzmenu);
 router.delete("/:id", deleteZakazivanje);
+router.delete("/:id/potvrdi", potvrdiBrisanje);
 
 export default router;
