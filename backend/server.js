@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import gradjaniRoute from "./routes/gradjani.js";
 import notariRoute from "./routes/notari.js";
 import zakaziRoute from "./routes/zakazi.js";
+import adminRoute from "./routes/admin.js";
 import db from "./models/db.js";
 
 dotenv.config();
@@ -20,6 +21,7 @@ app.use("/api/gradjani", gradjaniRoute);
 app.use("/api/notari", notariRoute);
 app.use("/api/zakazi", zakaziRoute);
 app.use("/api/zakazivanje", zakaziRoute); // Alternativna ruta za kompatibilnost
+app.use("/api/admin", adminRoute);
 
 // Test ruta
 app.get("/", (req, res) => {

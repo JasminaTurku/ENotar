@@ -1,15 +1,26 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { COLORS } from "../Home/Styled";
-import { registerGradjanin, registerNotar, loginUser } from "./authAPI";
+import {
+  registerGradjanin,
+  registerNotar,
+  loginUser,
+  aktivirajNotar,
+} from "./authAPI";
+import { loginAdmin } from "./adminAPI";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const AuthForm = ({ onClose }) => {
   const { login } = useAuth();
-  const [activeTab, setActiveTab] = useState("login"); // 'login' ili 'register'
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("login"); // 'login', 'register', ili 'admin'
   const [userType, setUserType] = useState("gradjanin"); // Za registraciju
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showActivationModal, setShowActivationModal] = useState(false);
+  const [pendingNotarData, setPendingNotarData] = useState(null);
+  const [aktivacioniKod, setAktivacioniKod] = useState("");
   const [formData, setFormData] = useState({
     ime: "",
     prezime: "",
@@ -17,6 +28,8 @@ const AuthForm = ({ onClose }) => {
     lozinka: "",
     jmbg: "",
     grad: "",
+    telefon: "",
+    korisnickoIme: "", // Za admin login
   });
 
   // Lista gradova u Srbiji
@@ -99,6 +112,30 @@ const AuthForm = ({ onClose }) => {
     }
   };
 
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const adminData = await loginAdmin(
+        formData.korisnickoIme,
+        formData.lozinka
+      );
+
+      login(adminData, "admin");
+
+      alert("Uspešno ste se prijavili kao administrator!");
+      navigate("/admin");
+      onClose();
+    } catch (err) {
+      console.error("Greška pri admin prijavi:", err);
+      setError(err.error || "Pogrešno korisničko ime ili lozinka");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -127,32 +164,72 @@ const AuthForm = ({ onClose }) => {
         alert("Uspešno ste se registrovali kao građanin!");
         onClose();
       } else {
+        // Validacija telefona
+        if (!formData.telefon || formData.telefon.length < 9) {
+          setError("Molimo unesite validan broj telefona");
+          setLoading(false);
+          return;
+        }
+
         const notarData = {
           ime: fullName,
           email: formData.email,
           lozinka: formData.lozinka,
           grad: formData.grad,
+          telefon: formData.telefon,
         };
 
         const response = await registerNotar(notarData);
         console.log("Notar registrovan:", response);
 
-        // Automatski prijavi korisnika nakon registracije
-        login(
-          {
-            id: response.id,
-            ime: fullName,
-            email: formData.email,
-            grad: formData.grad,
-          },
-          "notar"
-        );
-        alert("Uspešno ste se registrovali kao notar!");
-        onClose();
+        // Sačuvaj podatke i prikaži modal za aktivacioni kod
+        setPendingNotarData({
+          ...response,
+          ime: fullName,
+          email: formData.email,
+          grad: formData.grad,
+        });
+        setShowActivationModal(true);
+
+        // NE prikazuj alert - odmah otvori modal
       }
     } catch (err) {
       console.error("Greška pri registraciji:", err);
       setError(err.message || "Došlo je do greške pri registraciji");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAktivacija = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await aktivirajNotar(
+        pendingNotarData.notarId,
+        aktivacioniKod
+      );
+      console.log("Notar aktiviran:", response);
+
+      // Automatski prijavi korisnika nakon aktivacije
+      login(
+        {
+          id: pendingNotarData.notarId,
+          ime: pendingNotarData.ime,
+          email: pendingNotarData.email,
+          grad: pendingNotarData.grad,
+        },
+        "notar"
+      );
+
+      alert("Nalog uspešno aktiviran! Dobrodošli!");
+      setShowActivationModal(false);
+      onClose();
+    } catch (err) {
+      console.error("Greška pri aktivaciji:", err);
+      setError(err.message || "Neispravan aktivacioni kod");
     } finally {
       setLoading(false);
     }
@@ -174,10 +251,55 @@ const AuthForm = ({ onClose }) => {
           >
             Registracija
           </Tab>
+          <Tab
+            active={activeTab === "admin"}
+            onClick={() => setActiveTab("admin")}
+            className="admin-tab"
+          >
+            🔒 Admin
+          </Tab>
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </TabContainer>
 
-        {activeTab === "login" ? (
+        {activeTab === "admin" ? (
+          <Form onSubmit={handleAdminLogin}>
+            <Title>Admin Prijava</Title>
+            <AdminInfoBox>
+              <InfoIcon>🔐</InfoIcon>
+              <InfoText>
+                <strong>Samo za administratore</strong>
+                <br />
+                Pristup rezervisan isključivo za ovlašćeno osoblje.
+              </InfoText>
+            </AdminInfoBox>
+            <InputGroup>
+              <Label>Korisničko ime</Label>
+              <Input
+                type="text"
+                name="korisnickoIme"
+                placeholder="Unesite korisničko ime"
+                value={formData.korisnickoIme}
+                onChange={handleInputChange}
+                required
+              />
+            </InputGroup>
+            <InputGroup>
+              <Label>Lozinka</Label>
+              <Input
+                type="password"
+                name="lozinka"
+                placeholder="••••••••"
+                value={formData.lozinka}
+                onChange={handleInputChange}
+                required
+              />
+            </InputGroup>
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+            <SubmitButton type="submit" disabled={loading}>
+              {loading ? "Prijava u toku..." : "Prijavi se kao Admin"}
+            </SubmitButton>
+          </Form>
+        ) : activeTab === "login" ? (
           <Form onSubmit={handleLogin}>
             <Title>Prijavite se</Title>
             <InputGroup>
@@ -272,22 +394,36 @@ const AuthForm = ({ onClose }) => {
             )}
 
             {userType === "notar" && (
-              <InputGroup>
-                <Label>Grad</Label>
-                <Select
-                  name="grad"
-                  value={formData.grad}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Izaberite grad</option>
-                  {gradoviSrbije.map((grad) => (
-                    <option key={grad} value={grad}>
-                      {grad}
-                    </option>
-                  ))}
-                </Select>
-              </InputGroup>
+              <>
+                <InputGroup>
+                  <Label>Grad</Label>
+                  <Select
+                    name="grad"
+                    value={formData.grad}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Izaberite grad</option>
+                    {gradoviSrbije.map((grad) => (
+                      <option key={grad} value={grad}>
+                        {grad}
+                      </option>
+                    ))}
+                  </Select>
+                </InputGroup>
+                <InputGroup>
+                  <Label>Broj telefona</Label>
+                  <Input
+                    type="tel"
+                    name="telefon"
+                    placeholder="06XXXXXXXX"
+                    value={formData.telefon}
+                    onChange={handleInputChange}
+                    pattern="[0-9]{9,10}"
+                    required
+                  />
+                </InputGroup>
+              </>
             )}
 
             <InputGroup>
@@ -323,6 +459,62 @@ const AuthForm = ({ onClose }) => {
           </Form>
         )}
       </AuthCard>
+
+      {/* Modal za aktivaciju notara */}
+      {showActivationModal && (
+        <ActivationOverlay>
+          <ActivationModal>
+            <ModalHeader>
+              <ModalTitle>Aktivirajte Vaš nalog</ModalTitle>
+            </ModalHeader>
+            <ModalBody>
+              <ModalText>
+                ✅ <strong>Registracija uspešna!</strong>
+                <br />
+                <br />
+                Administrator će Vas kontaktirati na broj telefona koji ste
+                uneli i dostaviti Vam aktivacioni kod.
+                <br />
+                <br />
+                Nakon što dobijete kod od administratora, unesite ga ovde da
+                aktivirate Vaš nalog.
+              </ModalText>
+              <Form onSubmit={handleAktivacija}>
+                <InputGroup>
+                  <Label>Aktivacioni kod</Label>
+                  <Input
+                    type="text"
+                    placeholder="NOT-XXXXXX"
+                    value={aktivacioniKod}
+                    onChange={(e) =>
+                      setAktivacioniKod(e.target.value.toUpperCase())
+                    }
+                    required
+                    autoFocus
+                  />
+                </InputGroup>
+
+                {error && <ErrorMessage>{error}</ErrorMessage>}
+
+                <ButtonContainer>
+                  <SubmitButton type="submit" disabled={loading}>
+                    {loading ? "Aktiviranje..." : "Aktiviraj nalog"}
+                  </SubmitButton>
+                  <CancelButton
+                    type="button"
+                    onClick={() => {
+                      setShowActivationModal(false);
+                      setError("");
+                    }}
+                  >
+                    Otkaži
+                  </CancelButton>
+                </ButtonContainer>
+              </Form>
+            </ModalBody>
+          </ActivationModal>
+        </ActivationOverlay>
+      )}
     </AuthContainer>
   );
 };
@@ -402,6 +594,21 @@ const Tab = styled.button`
   &:hover {
     color: ${COLORS.indigo};
     background-color: ${COLORS.gray50};
+  }
+
+  &.admin-tab {
+    color: ${(props) => (props.active ? "#764ba2" : COLORS.gray500)};
+    border-bottom-color: ${(props) =>
+      props.active ? "#764ba2" : "transparent"};
+
+    &:hover {
+      color: #764ba2;
+      background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(118, 75, 162, 0.05)
+      );
+    }
   }
 `;
 
@@ -541,4 +748,121 @@ const ErrorMessage = styled.div`
   margin-bottom: 1rem;
   font-size: 0.9rem;
   text-align: center;
+`;
+
+const AdminInfoBox = styled.div`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+`;
+
+const InfoIcon = styled.div`
+  font-size: 2rem;
+  flex-shrink: 0;
+`;
+
+const InfoText = styled.div`
+  font-size: 0.9rem;
+  line-height: 1.5;
+
+  strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 1rem;
+  }
+
+  code {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "Courier New", monospace;
+    font-weight: 600;
+  }
+`;
+
+const ActivationOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+`;
+
+const ActivationModal = styled.div`
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease;
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+const ModalHeader = styled.div`
+  padding: 1.5rem;
+  border-bottom: 1px solid ${COLORS.gray200};
+`;
+
+const ModalTitle = styled.h2`
+  color: ${COLORS.indigo};
+  font-size: 1.5rem;
+  margin: 0;
+  text-align: center;
+`;
+
+const ModalBody = styled.div`
+  padding: 2rem;
+`;
+
+const ModalText = styled.p`
+  color: ${COLORS.gray700};
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  text-align: center;
+
+  strong {
+    color: ${COLORS.indigo};
+    font-weight: 700;
+  }
+`;
+
+const CancelButton = styled.button`
+  width: 100%;
+  padding: 0.875rem;
+  margin-top: 0.75rem;
+  background-color: transparent;
+  color: ${COLORS.gray600};
+  border: 1px solid ${COLORS.gray300};
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${COLORS.gray100};
+    border-color: ${COLORS.gray400};
+  }
 `;

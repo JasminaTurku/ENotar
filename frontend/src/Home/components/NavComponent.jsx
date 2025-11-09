@@ -46,6 +46,8 @@ export const NavComponent = ({ onLinkClick, mobile = false }) => {
   const handleProfileClick = () => {
     if (user.type === "notar") {
       navigate("/profil-notara");
+    } else if (user.type === "admin") {
+      navigate("/admin");
     } else {
       navigate("/profil-gradjanina");
     }
@@ -68,7 +70,11 @@ export const NavComponent = ({ onLinkClick, mobile = false }) => {
         <UserSection>
           <UserButtonWrapper>
             <UserButton onClick={handleProfileClick}>
-              {user.type === "notar" ? "Notar" : "Građanin"}
+              {user.type === "notar"
+                ? "Notar"
+                : user.type === "admin"
+                ? "Admin"
+                : "Građanin"}
             </UserButton>
             {user.type === "gradjanin" && notificationCount > 0 && (
               <NotificationBadge>{notificationCount}</NotificationBadge>

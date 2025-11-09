@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
   const login = (userData, userType) => {
     const user = {
       ...userData,
-      type: userType, // 'gradjanin' ili 'notar'
+      type: userType, // 'gradjanin', 'notar', ili 'admin'
     };
     setUser(user);
     setIsAuthenticated(true);

@@ -8,6 +8,7 @@ import Home from "./Home/Home.jsx";
 import AuthForm from "./auth/AuthForm";
 import NotarProfile from "./Home/NotarProfile";
 import GradjaninProfile from "./Home/GradjaninProfile";
+import AdminPanel from "./Home/AdminPanel";
 import { AuthProvider } from "./context/AuthContext";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/login" element={<AuthWrapper />} />
           <Route path="/profil-notara" element={<NotarProfile />} />
           <Route path="/profil-gradjanina" element={<GradjaninProfile />} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Routes>
       </Router>
     </AuthProvider>

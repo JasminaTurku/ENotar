@@ -77,14 +77,50 @@ export const loginUser = async (email, lozinka) => {
 
     if (notarResponse.ok) {
       const notar = await notarResponse.json();
+
+      // Proveri da li je notar aktivirao nalog
+      if (!notar.aktiviran) {
+        throw new Error(
+          "Nalog nije aktiviran. Molimo Vas da unesete aktivacioni kod koji ste dobili SMS-om."
+        );
+      }
+
       // Proveri lozinku
       if (notar.lozinka === lozinka) {
         return { user: notar, type: "notar" };
       }
     }
   } catch (error) {
+    // Ako je custom error message, prosl edite ga dalje
+    if (error.message.includes("aktiviran")) {
+      throw error;
+    }
     console.log("Nije pronađen kao notar");
   }
 
   throw new Error("Pogrešan email ili lozinka");
+};
+
+// Aktivacija notara
+export const aktivirajNotar = async (notarId, kod) => {
+  try {
+    const response = await fetch("http://localhost:5000/api/notari/aktiviraj", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ notarId, kod }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Greška pri aktivaciji");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Greška pri aktivaciji notara:", error);
+    throw error;
+  }
 };
