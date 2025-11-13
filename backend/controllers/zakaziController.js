@@ -1,5 +1,52 @@
 import db from "../models/db.js";
 
+// Ažuriraj status zakazivanja (samo za notare)
+export const updateStatus = (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  console.log("\n=== AŽURIRANJE STATUSA ZAKAZIVANJA ===");
+  console.log("Zakazivanje ID:", id);
+  console.log("Novi status:", status);
+
+  // Validacija statusa
+  const validStatuses = [
+    "na čekanju",
+    "prijava_primljena",
+    "u_obradi",
+    "potreban_dolazak",
+    "zavrseno",
+    "otkazano",
+  ];
+
+  if (!validStatuses.includes(status)) {
+    console.log("❌ Nevažeći status:", status);
+    return res.status(400).json({
+      error: `Nevažeći status. Dozvoljeni: ${validStatuses.join(", ")}`,
+    });
+  }
+
+  db.query(
+    "UPDATE zakazivanja SET status = ? WHERE id = ?",
+    [status, id],
+    (err, result) => {
+      if (err) {
+        console.error("❌ Greška pri ažuriranju statusa:", err);
+        return res.status(500).json({ error: err.message });
+      }
+
+      if (result.affectedRows === 0) {
+        console.log("❌ Zakazivanje nije pronađeno");
+        return res.status(404).json({ error: "Zakazivanje nije pronađeno" });
+      }
+
+      console.log("✅ Status uspešno ažuriran!");
+      console.log("=======================================\n");
+      res.json({ message: "Status ažuriran", status });
+    }
+  );
+};
+
 export const addZakazivanje = (req, res) => {
   const {
     gradjanin_id,

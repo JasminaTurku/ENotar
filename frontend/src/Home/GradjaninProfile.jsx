@@ -11,6 +11,29 @@ const GradjaninProfile = () => {
   const [termini, setTermini] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Statusi sa opisima, ikonama i bojama
+  const getStatusDisplay = (status) => {
+    const statusMap = {
+      "na čekanju": { label: "Na čekanju", icon: "⏳", color: "#6c757d" },
+      zakazano: { label: "Zakazano", icon: "📅", color: "#0d6efd" },
+      prijava_primljena: {
+        label: "Prijava primljena",
+        icon: "👀",
+        color: "#0dcaf0",
+      },
+      u_obradi: { label: "U obradi", icon: "⚙️", color: "#fd7e14" },
+      potreban_dolazak: {
+        label: "Potreban dolazak",
+        icon: "🏢",
+        color: "#ffc107",
+      },
+      zavrseno: { label: "Završeno", icon: "✅", color: "#198754" },
+      otkazano: { label: "Otkazano", icon: "❌", color: "#dc3545" },
+    };
+
+    return statusMap[status] || { label: status, icon: "❓", color: "#6c757d" };
+  };
+
   useEffect(() => {
     if (user && user.id) {
       fetchTermini();
@@ -188,10 +211,28 @@ const GradjaninProfile = () => {
                   )}
                   <TerminHeader>
                     <TerminTitle>{termin.vrsta_overe}</TerminTitle>
-                    <StatusBadge status={termin.status}>
-                      {termin.status}
-                    </StatusBadge>
+                    <StatusBadgeNew status={termin.status}>
+                      <StatusIcon>
+                        {getStatusDisplay(termin.status).icon}
+                      </StatusIcon>
+                      <StatusText>
+                        {getStatusDisplay(termin.status).label}
+                      </StatusText>
+                    </StatusBadgeNew>
                   </TerminHeader>
+                  <StatusDescription status={termin.status}>
+                    {termin.status === "na čekanju" &&
+                      "Vaš zahtev je poslat i čeka obradu od strane notara."}
+                    {termin.status === "prijava_primljena" &&
+                      "Notar je video vašu prijavu i priprema dokumentaciju."}
+                    {termin.status === "u_obradi" &&
+                      "Notar trenutno radi na vašoj overi dokumenta."}
+                    {termin.status === "potreban_dolazak" &&
+                      "⚠️ Notar vas poziva da dođete lično do kancelarije."}
+                    {termin.status === "zavrseno" &&
+                      "✅ Overa je uspešno završena! Dokumenta su spremna."}
+                    {termin.status === "otkazano" && "Ovaj zahtev je otkazan."}
+                  </StatusDescription>
                   <TerminInfo>
                     <InfoRow>
                       <InfoLabel>Notar:</InfoLabel>
@@ -388,6 +429,69 @@ const StatusBadge = styled.span`
   background-color: ${(props) =>
     props.status === "zakazano" ? COLORS.green : COLORS.orange};
   color: white;
+`;
+
+const StatusBadgeNew = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background-color: ${(props) => {
+    const statusMap = {
+      "na čekanju": "#6c757d",
+      zakazano: "#0d6efd",
+      prijava_primljena: "#0dcaf0",
+      u_obradi: "#fd7e14",
+      potreban_dolazak: "#ffc107",
+      zavrseno: "#198754",
+      otkazano: "#dc3545",
+    };
+    return statusMap[props.status] || "#6c757d";
+  }};
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const StatusIcon = styled.span`
+  font-size: 1.1rem;
+`;
+
+const StatusText = styled.span`
+  font-weight: 600;
+`;
+
+const StatusDescription = styled.div`
+  background-color: ${(props) => {
+    const bgMap = {
+      "na čekanju": "#f8f9fa",
+      prijava_primljena: "#cff4fc",
+      u_obradi: "#fff3cd",
+      potreban_dolazak: "#fff3cd",
+      zavrseno: "#d1e7dd",
+      otkazano: "#f8d7da",
+    };
+    return bgMap[props.status] || "#f8f9fa";
+  }};
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: ${COLORS.gray700};
+  border-left: 4px solid
+    ${(props) => {
+      const borderMap = {
+        "na čekanju": "#6c757d",
+        prijava_primljena: "#0dcaf0",
+        u_obradi: "#fd7e14",
+        potreban_dolazak: "#ffc107",
+        zavrseno: "#198754",
+        otkazano: "#dc3545",
+      };
+      return borderMap[props.status] || "#6c757d";
+    }};
 `;
 
 const TerminInfo = styled.div`

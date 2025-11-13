@@ -12,6 +12,17 @@ const NotarProfile = () => {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({ datum: "", vreme: "" });
+  const [changingStatusId, setChangingStatusId] = useState(null);
+
+  // Statusi sa opisima
+  const statusOptions = [
+    { value: "na čekanju", label: "Na čekanju", icon: "⏳" },
+    { value: "prijava_primljena", label: "Prijava primljena", icon: "👀" },
+    { value: "u_obradi", label: "U obradi", icon: "⚙️" },
+    { value: "potreban_dolazak", label: "Potreban dolazak", icon: "🏢" },
+    { value: "zavrseno", label: "Završeno", icon: "✅" },
+    { value: "otkazano", label: "Otkazano", icon: "❌" },
+  ];
 
   // Dobavi današnji datum u formatu YYYY-MM-DD
   const getTodayDate = () => {
@@ -99,6 +110,27 @@ const NotarProfile = () => {
     } catch (error) {
       console.error("Greška pri potvrđivanju brisanja:", error);
       alert("Greška pri potvrđivanju brisanja termina");
+    }
+  };
+
+  const handleStatusChange = async (terminId, newStatus) => {
+    try {
+      setChangingStatusId(terminId);
+      await axios.patch(`http://localhost:5000/api/zakazi/${terminId}/status`, {
+        status: newStatus,
+      });
+      // Ažuriraj termin u listi
+      setTermini((prevTermini) =>
+        prevTermini.map((t) =>
+          t.id === terminId ? { ...t, status: newStatus } : t
+        )
+      );
+      alert("Status uspešno promenjen!");
+    } catch (error) {
+      console.error("Greška pri promeni statusa:", error);
+      alert("Greška pri promeni statusa");
+    } finally {
+      setChangingStatusId(null);
     }
   };
 
@@ -205,6 +237,27 @@ const NotarProfile = () => {
                     <InfoRow>
                       <InfoLabel>JMBG:</InfoLabel>
                       <InfoText>{termin.gradjanin_jmbg}</InfoText>
+                    </InfoRow>
+                    <InfoRow>
+                      <InfoLabel>Status:</InfoLabel>
+                      <StatusContainer>
+                        <StatusSelect
+                          value={termin.status || "na čekanju"}
+                          onChange={(e) =>
+                            handleStatusChange(termin.id, e.target.value)
+                          }
+                          disabled={changingStatusId === termin.id}
+                        >
+                          {statusOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.icon} {option.label}
+                            </option>
+                          ))}
+                        </StatusSelect>
+                        {changingStatusId === termin.id && (
+                          <span style={{ marginLeft: "10px" }}>⏳</span>
+                        )}
+                      </StatusContainer>
                     </InfoRow>
                     <InfoRow>
                       <InfoLabel>Datum:</InfoLabel>
@@ -444,6 +497,42 @@ const InfoLabel = styled.span`
 
 const InfoText = styled.span`
   color: ${COLORS.gray800};
+`;
+
+const StatusContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const StatusSelect = styled.select`
+  padding: 0.5rem 1rem;
+  border: 2px solid ${COLORS.gray300};
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: ${COLORS.gray800};
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+
+  &:hover:not(:disabled) {
+    border-color: ${COLORS.indigo};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: ${COLORS.indigo};
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  option {
+    padding: 0.5rem;
+  }
 `;
 
 const ViewDocButton = styled.button`
