@@ -143,6 +143,48 @@ export const addNotar = (req, res) => {
   });
 };
 
+// Proveri status notara po email-u
+export const proveriStatus = (req, res) => {
+  const { email } = req.params;
+
+  console.log("\n=== PROVERA STATUSA NOTARA ===");
+  console.log("Email:", email);
+
+  db.query(
+    "SELECT id, ime, email, status, aktiviran FROM notari WHERE email = ?",
+    [email],
+    (err, results) => {
+      if (err) {
+        console.error("❌ Greška pri proveri statusa:", err);
+        return res.status(500).json({ error: "Greška u bazi" });
+      }
+
+      if (results.length === 0) {
+        console.log("❌ Notar ne postoji");
+        return res.json({ exists: false });
+      }
+
+      const notar = results[0];
+      console.log("✅ Notar pronađen:", {
+        id: notar.id,
+        ime: notar.ime,
+        status: notar.status,
+        aktiviran: notar.aktiviran,
+      });
+      console.log("==========================\n");
+
+      res.json({
+        exists: true,
+        id: notar.id,
+        ime: notar.ime,
+        email: notar.email,
+        status: notar.status,
+        aktiviran: notar.aktiviran,
+      });
+    }
+  );
+};
+
 export const aktivirajNotar = (req, res) => {
   const { notarId, kod } = req.body;
 
@@ -167,7 +209,7 @@ export const aktivirajNotar = (req, res) => {
 
       // Aktiviraj notara
       db.query(
-        "UPDATE notari SET aktiviran = TRUE WHERE id = ?",
+        "UPDATE notari SET aktiviran = TRUE, status = 'activated' WHERE id = ?",
         [notarId],
         (err) => {
           if (err) {

@@ -149,6 +149,35 @@ const StatusBadge = styled.span`
   }
 `;
 
+const SendCodeButton = styled.button`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+`;
+
 const EmptyState = styled.div`
   text-align: center;
   padding: 60px 20px;
@@ -170,6 +199,7 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [copiedKod, setCopiedKod] = useState(null);
+  const [sendingCode, setSendingCode] = useState(null); // ID notara kojem se šalje kod
 
   const fetchNotari = async () => {
     setLoading(true);
@@ -193,6 +223,36 @@ const AdminPanel = () => {
   useEffect(() => {
     fetchNotari();
   }, []);
+
+  const posaljiKod = async (notarId, email) => {
+    setSendingCode(notarId);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `http://localhost:5000/api/admin/posalji-kod/${notarId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert(
+        `✅ Kod uspešno poslat na email: ${email}\n\nKod: ${response.data.kod}`
+      );
+
+      // Osveži listu
+      fetchNotari();
+    } catch (err) {
+      setError(err.response?.data?.error || "Greška pri slanju koda");
+      alert(
+        `❌ Greška: ${err.response?.data?.error || "Nije moguće poslati kod"}`
+      );
+    } finally {
+      setSendingCode(null);
+    }
+  };
 
   const copyToClipboard = (kod, id) => {
     navigator.clipboard.writeText(kod);
@@ -245,6 +305,7 @@ const AdminPanel = () => {
               <Th>Verifikacioni Kod</Th>
               <Th>Datum Kreiranja</Th>
               <Th>Status</Th>
+              <Th>Akcije</Th>
             </tr>
           </Thead>
           <Tbody>
@@ -257,22 +318,40 @@ const AdminPanel = () => {
                 <Td>{notar.telefon}</Td>
                 <Td>
                   <CodeCell>
-                    <Code>{notar.kod}</Code>
-                    <CopyButton
-                      onClick={() => copyToClipboard(notar.kod, notar.id)}
-                      className={copiedKod === notar.id ? "copied" : ""}
-                    >
-                      {copiedKod === notar.id ? "✓ Kopirano" : "Kopiraj"}
-                    </CopyButton>
+                    {notar.kod ? (
+                      <>
+                        <Code>{notar.kod}</Code>
+                        <CopyButton
+                          onClick={() => copyToClipboard(notar.kod, notar.id)}
+                          className={copiedKod === notar.id ? "copied" : ""}
+                        >
+                          {copiedKod === notar.id ? "✓ Kopirano" : "Kopiraj"}
+                        </CopyButton>
+                      </>
+                    ) : (
+                      <span style={{ color: "#95a5a6" }}>Nema koda</span>
+                    )}
                   </CodeCell>
                 </Td>
-                <Td>{formatDate(notar.kreiran_datum)}</Td>
+                <Td>
+                  {notar.kreiran_datum ? formatDate(notar.kreiran_datum) : "-"}
+                </Td>
                 <Td>
                   <StatusBadge
                     className={notar.iskoriscen ? "used" : "pending"}
                   >
                     {notar.iskoriscen ? "Iskorišćen" : "Na čekanju"}
                   </StatusBadge>
+                </Td>
+                <Td>
+                  <SendCodeButton
+                    onClick={() => posaljiKod(notar.id, notar.email)}
+                    disabled={sendingCode === notar.id}
+                  >
+                    {sendingCode === notar.id
+                      ? "📤 Šalje se..."
+                      : "📧 Pošalji Kod"}
+                  </SendCodeButton>
                 </Td>
               </tr>
             ))}

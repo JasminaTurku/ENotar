@@ -4,11 +4,13 @@ import {
   addNotar,
   searchNotari,
   aktivirajNotar,
+  proveriStatus,
 } from "../controllers/notariController.js";
 const router = express.Router();
 
 router.get("/", getNotari);
 router.get("/search", searchNotari);
+router.get("/proveri-status/:email", proveriStatus);
 router.post("/", addNotar);
 router.post("/aktiviraj", aktivirajNotar);
 

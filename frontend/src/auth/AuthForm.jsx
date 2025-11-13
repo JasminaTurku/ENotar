@@ -164,6 +164,61 @@ const AuthForm = ({ onClose }) => {
         alert("Uspešno ste se registrovali kao građanin!");
         onClose();
       } else {
+        // NOVO: PRVO proveri da li email već postoji
+        console.log("🔍 Proveravam da li email već postoji...");
+        const checkResponse = await fetch(
+          `http://localhost:5000/api/notari/proveri-status/${encodeURIComponent(
+            formData.email
+          )}`
+        );
+        const emailCheck = await checkResponse.json();
+
+        console.log("📧 Provera emaila:", emailCheck);
+
+        // Ako email već postoji, prikaži odgovarajuću poruku
+        if (emailCheck.exists) {
+          if (emailCheck.status === "code_sent" && !emailCheck.aktiviran) {
+            // Email postoji i kod je poslat - prikaži modal za aktivaciju
+            console.log(
+              "✅ Email postoji sa code_sent statusom - prikazujem modal"
+            );
+            setPendingNotarData({
+              notarId: emailCheck.id,
+              ime: emailCheck.ime,
+              email: emailCheck.email,
+            });
+            setShowActivationModal(true);
+            setLoading(false);
+            return;
+          } else if (
+            emailCheck.status === "activated" ||
+            emailCheck.aktiviran
+          ) {
+            setError("Ovaj nalog je već aktiviran. Možete se prijaviti.");
+            setLoading(false);
+            return;
+          } else if (emailCheck.status === "pending") {
+            setError(
+              "Registracija je već poslata. Čekate da administrator pošalje kod."
+            );
+            setLoading(false);
+            return;
+          } else if (emailCheck.status === "rejected") {
+            setError(
+              "Vaša registracija je odbijena. Kontaktirajte administratora."
+            );
+            setLoading(false);
+            return;
+          } else {
+            setError("Email već postoji u sistemu.");
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Email ne postoji - nastavi sa registracijom
+        console.log("✅ Email ne postoji - nastavljam sa registracijom");
+
         // Validacija telefona
         if (!formData.telefon || formData.telefon.length < 9) {
           setError("Molimo unesite validan broj telefona");
@@ -472,12 +527,12 @@ const AuthForm = ({ onClose }) => {
                 ✅ <strong>Registracija uspešna!</strong>
                 <br />
                 <br />
-                Administrator će Vas kontaktirati na broj telefona koji ste
-                uneli i dostaviti Vam aktivacioni kod.
+                Kada administrator odobri da ste Vi notar, automatski ćete
+                dobiti verifikacioni kod na <strong>Vaš email</strong>.
                 <br />
                 <br />
-                Nakon što dobijete kod od administratora, unesite ga ovde da
-                aktivirate Vaš nalog.
+                📧 Proverite Vaš email inbox (i spam folder) za poruku sa kodom,
+                a zatim unesite kod ovde da aktivirate Vaš nalog.
               </ModalText>
               <Form onSubmit={handleAktivacija}>
                 <InputGroup>
